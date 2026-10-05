@@ -1,0 +1,10 @@
+# Librairies téléchargées par npm : chacun les réinstalle avec "npm install"
+node_modules/
+
+# Secrets (mot de passe de la base, clé JWT) : seul .env.example est versionné
+.env
+
+# Fichiers système et éditeur
+.DS_Store
+Thumbs.db
+.vscode/

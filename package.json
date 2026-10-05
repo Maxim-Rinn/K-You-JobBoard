@@ -1,0 +1,33 @@
+{
+  "name": "job-board",
+  "version": "1.0.0",
+  "description": "Job Board Epitech : API Express + PostgreSQL et front en JavaScript",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "seed": "node db/seed.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EpitechMscProPromo2029/T-WEB-501-STG-5-1-job_board-2.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/EpitechMscProPromo2029/T-WEB-501-STG-5-1-job_board-2/issues"
+  },
+  "homepage": "https://github.com/EpitechMscProPromo2029/T-WEB-501-STG-5-1-job_board-2#readme",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "dotenv": "^18.0.5",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.23.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
