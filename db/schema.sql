@@ -40,13 +40,13 @@ CREATE TABLE people (
     last_name     VARCHAR(100) NOT NULL,  -- obligatoire
     email         VARCHAR(255) NOT NULL UNIQUE,  -- obligatoire, un seul compte par email
     phone         VARCHAR(30),  -- facultatif
-    password_hash VARCHAR(255) NOT NULL,  -- réfléchissez : obligatoire ou pas ?
+    password_hash VARCHAR(255) NOT NULL,  -- obligatoire :tant que candidat à un compte. 
     role          VARCHAR(50) NOT NULL DEFAULT 'user' CHECK (role IN ('user', 'recruiter', 'admin')),  -- 'user' par défaut, et seulement user, recruiter ou admin
     company_id    INTEGER REFERENCES companies(id) ON DELETE SET NULL,  -- l'entreprise d'un recruteur ; si elle est supprimée, la personne reste mais sans entreprise
     created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     main_stack    TEXT,  -- obligatoire plus tard dans l'inscription, liste de technologies séparées par des virgules
     secondary_stack TEXT, -- obligatoire plus tard dans l'inscription, liste de technologies séparées par des virgules
-    environnement VARCHAR(50)  -- facultatif, ex : "Présentiel", "Télétravail", "Hybride"
+    work_mode     VARCHAR(50)  -- facultatif, ex : "Présentiel", "Télétravail", "Hybride"
 );
 
 
@@ -57,7 +57,6 @@ CREATE TABLE ads (
     short_description VARCHAR(255) NOT NULL,  -- obligatoire, affichée sur la liste (courte)
     full_description  TEXT NOT NULL,  -- obligatoire, longueur illimitée
     location          VARCHAR(150) NOT NULL,  -- obligatoire
-    contract_type     VARCHAR(50) NOT NULL,  -- obligatoire, ex : "CDI", "Stage", "Alternance"
     working_time      VARCHAR(50),  -- facultatif, ex : "35h/semaine"
     salary_min        DECIMAL(10, 2),  -- montant avec centimes, facultatif
     salary_max        DECIMAL(10, 2),  -- idem
