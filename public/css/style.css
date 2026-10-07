@@ -1,0 +1,18 @@
+:root {
+    --couleur-principale: green;
+    --couleur-titre: darkblue;
+}
+
+/* mettre tous les titre dans une couleur */
+h2 {
+    color : var(--couleur-titre) ;
+}
+
+/* mettre tous les boutons dans une certaine couleur */
+button {
+    background-color: var(--couleur-principale);
+    color: white;
+    
+}
+
+
