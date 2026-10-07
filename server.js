@@ -28,6 +28,8 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 
+// La connexion à PostgreSQL (db/index.js)
+const pool = require('./db');
 
 // ---------------------------------------------------------------------
 // 3. Installer la salle : créer l'application
@@ -45,9 +47,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 // ---------------------------------------------------------------------
 // 4. Écrire le menu : une première route de test
 // ---------------------------------------------------------------------
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok' });
+app.get('/api/health', async (req, res) => {
+  const result = await pool.query('SELECT NOW()');
+  res.json({ status: 'ok', db: 'ok', time: result.rows[0].now });
 });
+
 
 
 // ---------------------------------------------------------------------
