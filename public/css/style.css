@@ -15,4 +15,12 @@ button {
     
 }
 
+/* Mise en forme de la carte */
+
+article {
+    border: 1px solid rgba(128, 128, 128, 0.883);
+    padding: 16px;
+    margin-bottom: 12px;
+}
+
 
