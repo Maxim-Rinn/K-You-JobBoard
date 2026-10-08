@@ -65,18 +65,24 @@ router.get('/', async (req, res) => {
 });
 
 // GET /api/ads/:id : le détail complet d'une annonce (page "Learn more")
+//   200 : l'annonce (un objet) avec son entreprise et sa catégorie
+//   400 : id qui n'est pas un entier positif (ex : /api/ads/abc, /api/ads/0)
+//   404 : annonce inexistante ou désactivée
 router.get('/:id', async (req, res) => {
-  // 1. Récupérer l'id dans l'URL et le transformer en nombre entier
-  //    (les paramètres de route comme :id sont rangés dans req.?????)
+  // 1. Le :id de l'URL est rangé dans req.params, toujours sous forme de texte :
+  //    parseInt le transforme en nombre entier ('abc' donne NaN)
   const id = parseInt(req.params.id);
 
-  // 2. Si ce n'est pas un entier, ou s'il est plus petit que 1 : 400 et on s'arrête
+  // 2. On vérifie l'id AVANT d'interroger la base : sinon PostgreSQL planterait
+  //    sur 'abc' et on renverrait une erreur 500 au lieu d'un 400
   if (!Number.isInteger(id) || id < 1) {
     return res.status(400).json({ error: 'Identifiant invalide' });
   }
 
-  // 3. L'annonce + infos de son entreprise et de sa catégorie
-  //    (une annonce désactivée ne doit pas être visible du public)
+  // 3. L'annonce + infos de son entreprise et de sa catégorie (deux JOIN).
+  //    $1 = la 1re valeur de [id] : la valeur est envoyée à part de la requête,
+  //    donc aucune injection SQL possible.
+  //    is_active = TRUE : une annonce désactivée n'est pas visible du public.
   const result = await pool.query(`
     SELECT ads.*,
            companies.name    AS company_name,
@@ -89,12 +95,13 @@ router.get('/:id', async (req, res) => {
     WHERE ads.id = $1 AND ads.is_active = TRUE
   `, [id]);
 
-  // 4. Aucune ligne trouvée (tableau vide) : 404 et on s'arrête
+  // 4. result.rows est toujours un tableau : vide (length 0) = rien trouvé, donc 404
   if (result.rows.length === 0) {
     return res.status(404).json({ error: 'Annonce introuvable' });
   }
 
-  // 5. Renvoyer l'annonce : la PREMIÈRE case du tableau, pas le tableau entier
+  // 5. Un id est unique, donc une seule ligne : on renvoie rows[0] (un objet)
+  //    plutôt que le tableau, plus simple à utiliser pour le front
   res.json(result.rows[0]);
 });
 
