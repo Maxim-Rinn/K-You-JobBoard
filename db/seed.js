@@ -3,7 +3,7 @@ require('dotenv').config();
 // Importer le pool de connexion PostgreSQL
 const db = require('./index');
 // Importer bcryptjs pour le hachage sécurisé des mots de passe
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 
 async function seed() {
   try {
