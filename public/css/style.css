@@ -1,6 +1,9 @@
 :root {
-    --couleur-principale: green;
-    --couleur-titre: darkblue;
+    --couleur-principale: #2574eb;
+    --couleur-titre: #1E3A8A;
+    --couleur-texte: #1f2937;
+    --couleur-fond: #F9FAFB;
+    --arrondi: 8px;
 }
 
 /* mettre tous les titre dans une couleur */
@@ -12,7 +15,10 @@ h2 {
 button {
     background-color: var(--couleur-principale);
     color: white;
-    
+    cursor: pointer;
+    border: none;
+    padding: 12px 22px;
+    border-radius: var(--arrondi);
 }
 
 /* Mise en forme de la carte */
@@ -21,6 +27,11 @@ article {
     border: 1px solid rgba(128, 128, 128, 0.883);
     padding: 16px;
     margin-bottom: 12px;
+    border-radius: var(--arrondi);
 }
 
+body {
+    color: var(--couleur-texte);
+    background-color: var(--couleur-fond);
+}
 
