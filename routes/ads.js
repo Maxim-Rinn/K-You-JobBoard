@@ -26,8 +26,17 @@ const router = express.Router();
 // La connexion à la base (on remonte d'un dossier : routes/ -> racine -> db/)
 const pool = require('../db');
 
-// GET /api/ads : la liste des annonces actives, les plus récentes d'abord
+// GET /api/ads?page=1&limit=10 : les annonces actives, page par page
 router.get('/', async (req, res) => {
+  // 1. Lire page et limit dans l'URL. Valeurs par défaut : page 1, 10 par page.
+  //    On empêche les valeurs absurdes : page au moins 1, limit entre 1 et 50.
+  const page  = Math.max(parseInt(req.query.page) || 1, 1);
+  const limit = Math.min(Math.max(parseInt(req.query.limit) || 10, 1), 50);
+
+  // 2. Combien d'annonces sauter avant la page demandée
+  const offset = (page - 1) * limit;
+
+  // 3. Les annonces de la page (requête paramétrée : $1 = limit, $2 = offset)
   const result = await pool.query(`
     SELECT ads.id, ads.title, ads.short_description, ads.location,
            ads.work_mode, ads.created_at,
@@ -38,9 +47,21 @@ router.get('/', async (req, res) => {
     JOIN categories ON categories.id = ads.category_id
     WHERE ads.is_active = TRUE
     ORDER BY ads.created_at DESC
-  `);
+    LIMIT $1 OFFSET $2
+  `, [limit, offset]);
 
-  res.json(result.rows);
+  // 4. Le nombre total d'annonces actives (pour calculer le nombre de pages)
+  const count = await pool.query('SELECT COUNT(*) FROM ads WHERE is_active = TRUE');
+  const total = Number(count.rows[0].count);
+
+  // 5. La réponse : les annonces + les infos de pagination
+  res.json({
+    data: result.rows,
+    page,
+    limit,
+    total,
+    totalPages: Math.ceil(total / limit),
+  });
 });
 
 
