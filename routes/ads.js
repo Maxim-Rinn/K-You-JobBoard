@@ -64,6 +64,40 @@ router.get('/', async (req, res) => {
   });
 });
 
+// GET /api/ads/:id : le détail complet d'une annonce (page "Learn more")
+router.get('/:id', async (req, res) => {
+  // 1. Récupérer l'id dans l'URL et le transformer en nombre entier
+  //    (les paramètres de route comme :id sont rangés dans req.?????)
+  const id = parseInt(req.params.id);
+
+  // 2. Si ce n'est pas un entier, ou s'il est plus petit que 1 : 400 et on s'arrête
+  if (!Number.isInteger(id) || id < 1) {
+    return res.status(400).json({ error: 'Identifiant invalide' });
+  }
+
+  // 3. L'annonce + infos de son entreprise et de sa catégorie
+  //    (une annonce désactivée ne doit pas être visible du public)
+  const result = await pool.query(`
+    SELECT ads.*,
+           companies.name    AS company_name,
+           companies.website AS company_website,
+           companies.city    AS company_city,
+           categories.name   AS category_name
+    FROM ads
+    JOIN companies  ON companies.id  = ads.company_id
+    JOIN categories ON categories.id = ads.category_id
+    WHERE ads.id = $1 AND ads.is_active = TRUE
+  `, [id]);
+
+  // 4. Aucune ligne trouvée (tableau vide) : 404 et on s'arrête
+  if (result.rows.length === 0) {
+    return res.status(404).json({ error: 'Annonce introuvable' });
+  }
+
+  // 5. Renvoyer l'annonce : la PREMIÈRE case du tableau, pas le tableau entier
+  res.json(result.rows[0]);
+});
+
 
 // ----- Routes admin (Robin) -----
 
