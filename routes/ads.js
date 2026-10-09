@@ -107,7 +107,185 @@ router.get('/:id', async (req, res) => {
 
 
 // ----- Routes admin (Robin) -----
+// POST /api/ads - Créer une nouvelle annonce (Admin)
+router.post('/', async (req, res, next) => {
+    try {
+        const {
+            title,
+            short_description,
+            full_description,
+            location,
+            company_id,
+            category_id,
+            required_stack,
+            working_time,
+            salary_min,
+            salary_max,
+            is_active = true,
+            contact_id,
+            work_mode,
+            recruitment_process,
+            optional_stack
+        } = req.body;
 
+        // Validation des champs obligatoires
+        if (!title || !short_description || !full_description || !location || !company_id || !category_id || !required_stack) {
+            return res.status(400).json({
+                error: "Les champs title, short_description, full_description, location, company_id, category_id et required_stack sont obligatoires"
+            });
+        }
+
+        // Requête d'insertion paramétrée
+        const queryText = `
+            INSERT INTO ads (
+                title, short_description, full_description, location,
+                company_id, category_id, required_stack, working_time,
+                salary_min, salary_max, is_active, contact_id,
+                work_mode, recruitment_process, optional_stack
+            )
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+            RETURNING *
+        `;
+
+        const values = [
+            title.trim(),
+            short_description.trim(),
+            full_description.trim(),
+            location.trim(),
+            company_id,
+            category_id,
+            required_stack.trim(),
+            working_time ? working_time.trim() : null,
+            salary_min || null,
+            salary_max || null,
+            is_active,
+            contact_id || null,
+            work_mode ? work_mode.trim() : null,
+            recruitment_process ? recruitment_process.trim() : null,
+            optional_stack ? optional_stack.trim() : null
+        ];
+
+        const result = await pool.query(queryText, values);
+
+        res.status(201).json({ data: result.rows[0] });
+    } catch (error) {
+        if (error.code === '23503') {
+            return res.status(400).json({
+                error: "L'entreprise, la catégorie ou le contact spécifié n'existe pas"
+            });
+        }
+        next(error);
+    }
+});
+
+// PUT /api/ads/:id - Mettre à jour une annonce (Admin)
+router.put('/:id', async (req, res, next) => {
+    try {
+        const id = parseInt(req.params.id);
+        if (!Number.isInteger(id) || id < 1) {
+            return res.status(400).json({ error: 'Identifiant invalide' });
+        }
+
+        const {
+            title,
+            short_description,
+            full_description,
+            location,
+            company_id,
+            category_id,
+            required_stack,
+            working_time,
+            salary_min,
+            salary_max,
+            is_active,
+            contact_id,
+            work_mode,
+            recruitment_process,
+            optional_stack
+        } = req.body;
+
+        if (!title || !short_description || !full_description || !location || !company_id || !category_id || !required_stack) {
+            return res.status(400).json({
+                error: "Les champs title, short_description, full_description, location, company_id, category_id et required_stack sont obligatoires"
+            });
+        }
+
+        const queryText = `
+            UPDATE ads SET
+                title = $1,
+                short_description = $2,
+                full_description = $3,
+                location = $4,
+                company_id = $5,
+                category_id = $6,
+                required_stack = $7,
+                working_time = $8,
+                salary_min = $9,
+                salary_max = $10,
+                is_active = $11,
+                contact_id = $12,
+                work_mode = $13,
+                recruitment_process = $14,
+                optional_stack = $15
+            WHERE id = $16
+            RETURNING *
+        `;
+
+        const values = [
+            title.trim(),
+            short_description.trim(),
+            full_description.trim(),
+            location.trim(),
+            company_id,
+            category_id,
+            required_stack.trim(),
+            working_time ? working_time.trim() : null,
+            salary_min || null,
+            salary_max || null,
+            is_active !== undefined ? is_active : true,
+            contact_id || null,
+            work_mode ? work_mode.trim() : null,
+            recruitment_process ? recruitment_process.trim() : null,
+            optional_stack ? optional_stack.trim() : null,
+            id
+        ];
+
+        const result = await pool.query(queryText, values);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Annonce introuvable' });
+        }
+
+        res.json({ data: result.rows[0] });
+    } catch (error) {
+        if (error.code === '23503') {
+            return res.status(400).json({
+                error: "L'entreprise, la catégorie ou le contact spécifié n'existe pas"
+            });
+        }
+        next(error);
+    }
+});
+
+// DELETE /api/ads/:id - Supprimer une annonce (Admin)
+router.delete('/:id', async (req, res, next) => {
+    try {
+        const id = parseInt(req.params.id);
+        if (!Number.isInteger(id) || id < 1) {
+            return res.status(400).json({ error: 'Identifiant invalide' });
+        }
+
+        const result = await pool.query('DELETE FROM ads WHERE id = $1 RETURNING *', [id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Annonce introuvable' });
+        }
+
+        res.json({ message: 'Annonce supprimée avec succès' });
+    } catch (error) {
+        next(error);
+    }
+});
 
 // module.exports = ce que ce fichier "donne" à celui qui fait
 // require('./routes/ads'). Sans cette ligne, server.js recevrait un

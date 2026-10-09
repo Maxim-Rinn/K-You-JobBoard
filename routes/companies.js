@@ -19,8 +19,8 @@ const db = require('../db');
 router.get('/', async (req, res, next) => {
   try {
     // 1. On lit les paramètres passés dans l'URL (ex: /api/companies?page=1&limit=10)
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const page  = Math.max(parseInt(req.query.page) || 1, 1);
+    const limit = Math.min(Math.max(parseInt(req.query.limit) || 10, 1), 50);
     // 2. On calcule l'offset avec ta formule
     const offset = (page - 1) * limit;
 
@@ -53,17 +53,19 @@ router.get('/', async (req, res, next) => {
 // 2. GET /api/companies/:id - Récupérer une entreprise spécifique
 router.get('/:id', async (req, res, next) => {
     try {
-        const { id } = req.params;
+        const id = parseInt(req.params.id);
+        if (!Number.isInteger(id) || id < 1) {
+            return res.status(400).json({ error: 'Identifiant invalide' });
+        }
 
         const result = await db.query('SELECT * FROM companies WHERE id=$1', [id]);
         if (result.rows.length === 0) {
-            return res.status(404).json({ success: false, message: 'Entreprise non trouvée'});
+            return res.status(404).json({ error: 'Entreprise non trouvée' });
         }
-        res.json({ success: true, data: result.rows[0]});
+        res.json({ data: result.rows[0] });
     } catch (error) {
         next(error);
     }
-
 });
 
 // 3. POST /api/companies - Créer une nouvelle entreprise
@@ -71,20 +73,28 @@ router.post('/', async (req, res, next) => {
     try {
         const { name, city, website, description } = req.body;
         
-        // Validation du nom (NOT NULL)
         if (!name || name.trim() === '') {
-        return res.status(400).json({
-            success: false,
-            message: "Le nom de l'entreprise est obligatoire"
-        });
+            return res.status(400).json({
+                error: "Le nom de l'entreprise est obligatoire"
+            });
         }
         
         const result = await db.query(
             'INSERT INTO companies (name, city, website, description) VALUES ($1, $2, $3, $4) RETURNING *',
-            [name, city, website, description]
+            [
+                name.trim(),
+                city ? city.trim() : null,
+                website ? website.trim() : null,
+                description ? description.trim() : null
+            ]
         );
-        res.status(201).json({ success: true, data: result.rows[0]});
+        res.status(201).json({ data: result.rows[0] });
     } catch (error) {
+        if (error.code === '23505') {
+            return res.status(409).json({
+                error: "Ce nom d'entreprise est déjà utilisé"
+            });
+        }
         next(error);
     }
 });
@@ -92,26 +102,39 @@ router.post('/', async (req, res, next) => {
 // 4. PUT /api/companies/:id - Mettre à jour une entreprise
 router.put('/:id', async (req, res, next) => {
     try {
-        const { id } = req.params;
+        const id = parseInt(req.params.id);
+        if (!Number.isInteger(id) || id < 1) {
+            return res.status(400).json({ error: 'Identifiant invalide' });
+        }
+
         const { name, city, website, description } = req.body;
 
-        // Validation du nom (NOT NULL)
         if (!name || name.trim() === '') {
-        return res.status(400).json({
-            success: false,
-            message: "Le nom de l'entreprise est obligatoire"
-        });
+            return res.status(400).json({
+                error: "Le nom de l'entreprise est obligatoire"
+            });
         }
 
         const result = await db.query(
             'UPDATE companies SET name=$1, city=$2, website=$3, description=$4 WHERE id=$5 RETURNING *',
-            [name, city, website, description, id]
+            [
+                name.trim(),
+                city ? city.trim() : null,
+                website ? website.trim() : null,
+                description ? description.trim() : null,
+                id
+            ]
         );
         if (result.rows.length === 0) {
-            return res.status(404).json({ success: false, message: 'Entreprise non trouvée'});
+            return res.status(404).json({ error: 'Entreprise non trouvée' });
         }
-        res.json({ success: true, data: result.rows[0]});
+        res.json({ data: result.rows[0] });
     } catch (error) {
+        if (error.code === '23505') {
+            return res.status(409).json({
+                error: "Ce nom d'entreprise est déjà utilisé"
+            });
+        }
         next(error);
     }
 });
@@ -119,13 +142,22 @@ router.put('/:id', async (req, res, next) => {
 // 5. DELETE /api/companies/:id - Supprimer une entreprise
 router.delete('/:id', async (req, res, next) => {
     try {
-        const { id } =req.params;
+        const id = parseInt(req.params.id);
+        if (!Number.isInteger(id) || id < 1) {
+            return res.status(400).json({ error: 'Identifiant invalide' });
+        }
+
         const result = await db.query('DELETE FROM companies WHERE id=$1 RETURNING *', [id]);
         if (result.rows.length === 0) {
-            return res.status(404).json({ success: false, message: 'Entreprise non trouvée'});
+            return res.status(404).json({ error: 'Entreprise non trouvée' });
         }
-        res.json({ success:true, message: 'Entreprise supprimée avec succès'});
+        res.json({ message: 'Entreprise supprimée avec succès' });
     } catch (error) {
+        if (error.code === '23503') {
+            return res.status(400).json({
+                error: "Impossible de supprimer cette entreprise car des annonces y sont rattachées"
+            });
+        }
         next(error);
     }
 });
