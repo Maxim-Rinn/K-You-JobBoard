@@ -108,9 +108,56 @@ router.get('/:id', async (req, res, next) => {
 router.put('/:id', async (req, res, next) => {
     try {
         const { id } = req.params;
-        const { status } = req.body;
-        
+        const { status, message } = req.body;
+
+        // Validation du statut (NOT NULL)
+        if (!status || status.trim() === '') {
+            return res.status(400).json({
+                success: false,
+                message: "Le statut de la candidature est obligatoire"
+            });
+        }
+        if (!message || message.trim() === '') {
+            return res.status(400).json({
+                success: false,
+                message: "Le message de la candidature est obligatoire"
+            });
+        }
+
+        const result = await db.query(
+            'UPDATE applications SET status=$1, message=$2 WHERE id=$3 RETURNING *',
+            [status.trim(), message.trim(), id]
+        );
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Candidature non trouvée"
+            });
+        }
+        res.json({ success: true, data: result.rows[0] });
+    } catch (error) {
+        if (error.code === '23514') {
+            return res.status(400).json({
+                success: false,
+                message: "Le statut fourni n'est pas valide (valeurs autorisées : sent, reviewed, accepted, rejected)"
+            });
+        }
+        next(error);
     }
-})
+});
+
+// DELETE /api/applications/:id - Supprimer une candidature
+router.delete('/:id', async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const result = await db.query('DELETE FROM applications WHERE id=$1 RETURNING *', [id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, message: 'Candidature non trouvée'});
+        }
+        res.json({ success:true, message: 'Candidature supprimée avec succès'});
+    } catch (error) {
+        next(error);
+    }
+});
 
 module.exports = router;
