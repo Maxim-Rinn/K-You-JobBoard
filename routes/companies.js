@@ -36,7 +36,6 @@ router.get('/', async (req, res, next) => {
 
     // 4. Réponse
     res.json({
-      success: true,
       data: result.rows,
       pagination: {
         page,
