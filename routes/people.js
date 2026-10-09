@@ -17,6 +17,35 @@ const router = express.Router();
 
 
 // ----- Routes admin (Robin) -----
+//GET /api/people : liste de toutes les personnes
+router.get('/', async (req, res, next) => {
+    try {
+        const page  = Math.max(parseInt(req.query.page) || 1, 1);
+        const limit = Math.min(Math.max(parseInt(req.query.limit) || 10, 1), 50);
+        const offset = (page - 1) * limit;
+        const { id, first_name, last_name, email, role } = req.user;
+        if (role !== 'admin') {
+            return res.status(403).json({ error: 'Accès refusé : vous devez être administrateur pour accéder à cette ressource.'});
+        }
+        const result = await db.query('SELECT id, first_name, last_name, email FROM people ORDER BY id DESC LIMIT $1 OFFSET $2', [limit, offset]);
+        const countResult = await db.query('SELECT COUNT(*) FROM people');
+        const totalItems = parseInt(countResult.rows[0].count);
+        const totalPages = Math.ceil(totalItems / limit);
 
+        res.json({
+            success: true,
+            data: result.rows,
+            pagination: {
+                page,
+                limit,
+                totalItems,
+                totalPages
+            }
+        });
+        
+    } catch (error) {
+        next(error);
+    }
+});
 
 module.exports = router;
