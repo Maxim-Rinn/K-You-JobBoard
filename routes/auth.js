@@ -13,9 +13,11 @@
 const express = require('express');
 const router = express.Router();
 
-// La connexion à la base, et bcrypt pour hacher les mots de passe
+// La connexion à la base, bcrypt pour hacher les mots de passe,
+// et jsonwebtoken pour créer les jetons de connexion (JWT)
 const pool = require('../db');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 
 // POST /api/auth/register : créer un compte
@@ -65,6 +67,61 @@ router.post('/register', async (req, res) => {
 
   // 8. 201 = "créé" ; on renvoie la personne (un objet, pas un tableau)
   res.status(201).json(result.rows[0]);
+});
+
+
+// POST /api/auth/login : se connecter
+//   200 : { token, user } — le jeton à renvoyer ensuite dans chaque requête
+//   400 : email ou mot de passe manquant
+//   401 : email inconnu OU mauvais mot de passe (même message dans les deux cas)
+router.post('/login', async (req, res) => {
+  // 1. Récupérer l'email et le mot de passe envoyés par le formulaire
+  const { email, password } = req.body;
+
+  // 2. Les deux doivent être du texte, sinon 400
+  if (typeof email !== 'string' || typeof password !== 'string') {
+    return res.status(400).json({ error: 'Email et mot de passe obligatoires' });
+  }
+
+  // 3. Normaliser l'email EXACTEMENT comme à l'inscription
+  const cleanEmail = email.toLowerCase().trim();
+
+  // 4. Chercher la personne (on a besoin de son hash pour comparer)
+  const result = await pool.query(
+    'SELECT id, first_name, last_name, email, role, password_hash FROM people WHERE email = $1',
+    [cleanEmail]
+  );
+
+  // 5. Personne avec cet email : 401, avec un message volontairement vague
+  if (result.rows.length === 0) {
+    return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
+  }
+  const user = result.rows[0];
+
+  // 6. Comparer le mot de passe saisi avec le hash stocké : compare() re-hache
+  //    le mot de passe avec le sel du hash et répond true ou false.
+  //    (hash() fabriquerait un NOUVEAU hash, toujours "vrai" : tout passerait)
+  const ok = await bcrypt.compare(password, user.password_hash);
+  if (!ok) {
+    return res.status(401).json({ error: 'Email ou mot de passe incorrect' });
+  }
+
+  // 7. Fabriquer le jeton : on y met l'id et le rôle, signés avec JWT_SECRET,
+  //    une clé réservée aux jetons (jamais le mot de passe de la base).
+  //    Il expire au bout de 2 heures.
+  const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '2h' });
+
+  // 8. Répondre : le jeton + la personne (SANS le password_hash)
+  res.json({
+    token,
+    user: {
+      id: user.id,
+      first_name: user.first_name,
+      last_name: user.last_name,
+      email: user.email,
+      role: user.role,
+    },
+  });
 });
 
 
