@@ -1,9 +1,0 @@
-$kind: http-request
-name: http://localhost:3000/api/companies/3
-description: ""
-url: http://localhost:3000/api/companies/3
-method: DELETE
-body:
-  type: json
-  content: ""
-order: 1000
