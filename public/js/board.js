@@ -10,6 +10,7 @@ const annonces = [
         created_at: "2026-10-01T09:00:00.000Z",
         company_name:"ACME",
         category_name:"Alternance",
+        full_description:"Tu participeras au développement et à la maintenance des sites web de nos clients, aux côtés d'une équipe de trois développeurs. Tu seras formé au quotidien et tu travailleras en HTML, CSS et JavaScript, en alternance, deux jours par semaine en télétravail.",
     },
     {
         id: 2,
@@ -20,6 +21,7 @@ const annonces = [
         created_at:"2026-10-03T14:30:00.000Z",
         company_name:"CERFRANCE INDRE",
         category_name:"CDI",
+        full_description:"Tu assureras la saisie et le suivi de la comptabilité d'un portefeuille de petites entreprises, avec l'appui d'une comptable expérimentée. Tu prépareras les déclarations de TVA et les bilans simples, en CDI, dans nos bureaux.",
     },
     {
         id:3,
@@ -29,7 +31,8 @@ const annonces = [
         work_mode:"Télétravail",
         created_at:"2026-10-05T08:15:00.000Z",
         company_name:"WEBEDIA",
-        category_name:"Freelance"
+        category_name:"Freelance",
+        full_description:"Tu créeras les miniatures de nos vidéos pour une chaîne de plus d'un million d'abonnés, en respectant sa charte graphique. Tu travailleras en autonomie, à distance, avec un retour de l'équipe éditoriale sous 24 heures.",
     }
 
     
@@ -52,6 +55,7 @@ for (const annonce of annonces) {
     const dateCarte = document.createElement("p");
     const learnMore = document.createElement("button");
     const apply = document.createElement("button");
+    const detail = document.createElement("p");
     
 
     //2. "Remplir l'assiette" 
@@ -65,6 +69,7 @@ for (const annonce of annonces) {
     dateCarte.textContent = texte;
     learnMore.textContent = "Voir plus";
     apply.textContent = "Postuler";
+    detail.textContent = annonce.full_description;
     
     //3. assembler : le titre dans la carte, puis la carte dans la zone (elle apparaît)
     carte.append(titre);
@@ -76,5 +81,15 @@ for (const annonce of annonces) {
     carte.append(learnMore);
     carte.append(apply);
     zone.append(carte);
-
+    
+    // faire réagir les boutons : le "ghetteur"
+    
+    learnMore.addEventListener("click", function(){
+        console.log("clic sur", annonce.title);
+        carte.append(detail);
+        
+    })
 }
+
+
+
