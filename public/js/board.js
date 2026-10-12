@@ -1,5 +1,5 @@
 
-//Données fictive (les éléments "" seront modifiés une fois l'API terminée)
+//Données fictives (les éléments "" seront modifiés une fois l'API terminée)
 const annonces = [
     {
         id: 1,
@@ -35,16 +35,11 @@ const annonces = [
     
 ];
 
-//TESTS : afficher des valeurs dans la console
-console.log(annonces.length);
-console.log(annonces [2].title);
-//exemple en plus pour que je vois ce que "ça fait" du code vers la console
-console.log(annonces [2].category_name);
 
 //ZONE : la boîte vide de index.html où on range les cartes
 const zone = document.querySelector("#liste-annonces");
 
-//PREMIÈRE BOUCLE
+//Faire une BOUCLE
 for (const annonce of annonces) {
     
     //1. fabriquer les éléments (pas encore visible dans la page)
@@ -55,8 +50,11 @@ for (const annonce of annonces) {
     const entreprise = document.createElement("p");
     const contrat = document.createElement("p");
     const dateCarte = document.createElement("p");
+    const learnMore = document.createElement("button");
+    const apply = document.createElement("button");
     
-    //2. écrire dans le titre le texte qui vient du tableau 
+
+    //2. "Remplir l'assiette" 
     titre.textContent = annonce.title;
     entreprise.textContent = annonce.company_name;
     lieu.textContent = annonce.location;
@@ -65,7 +63,8 @@ for (const annonce of annonces) {
     const date = new Date(annonce.created_at);
     const texte = date.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
     dateCarte.textContent = texte;
-    console.log(texte);
+    learnMore.textContent = "Voir plus";
+    apply.textContent = "Postuler";
     
     //3. assembler : le titre dans la carte, puis la carte dans la zone (elle apparaît)
     carte.append(titre);
@@ -74,8 +73,8 @@ for (const annonce of annonces) {
     carte.append(contrat);
     carte.append(description);
     carte.append(dateCarte);
+    carte.append(learnMore);
+    carte.append(apply);
     zone.append(carte);
 
 }
-
-
