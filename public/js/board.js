@@ -54,7 +54,7 @@ for (const annonce of annonces) {
     const lieu = document.createElement("p");
     const entreprise = document.createElement("p");
     const contrat = document.createElement("p");
-    const date = document.createElement("p")
+    const dateCarte = document.createElement("p");
     
     //2. écrire dans le titre le texte qui vient du tableau 
     titre.textContent = annonce.title;
@@ -64,18 +64,18 @@ for (const annonce of annonces) {
     description.textContent = annonce.short_description;
     const date = new Date(annonce.created_at);
     const texte = date.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+    dateCarte.textContent = texte;
     console.log(texte);
     
-    //3. assembler : le titre dans la carte, puis la carte dans la zone (elle appraît)
+    //3. assembler : le titre dans la carte, puis la carte dans la zone (elle apparaît)
     carte.append(titre);
     carte.append(entreprise);
     carte.append(lieu);
     carte.append(contrat);
     carte.append(description);
+    carte.append(dateCarte);
     zone.append(carte);
 
 }
 
-const quand = {titre:"Développeur web junior", created_at: "2026-10-01T09:00:00.000Z" };
 
-const date = new Date(quand.created_at);
