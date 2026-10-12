@@ -1,0 +1,211 @@
+@baseUrl = http://localhost:3000/api
+
+### ==========================================
+### 1. COMPANIES (Entreprises)
+### ==========================================
+
+### Créer une entreprise (Attendu: 201 Created)
+POST {{baseUrl}}/companies
+Content-Type: application/json
+
+{
+  "name": "Test",
+  "description": "On test le test",
+  "website": "https://test.fr",
+  "city": "Paris",
+  "tech_stack": ["Node.js", "PostgreSQL", "React"],
+  "tech_team_composition": "15 développeurs",
+  "tech_team_avg_age": 29
+}
+
+### Lire toutes les entreprises (Attendu: 200 OK)
+GET {{baseUrl}}/companies?page=1&limit=5
+
+### Lire une entreprise par ID (Attendu: 200 OK)
+GET {{baseUrl}}/companies/1
+
+### Modifier une entreprise (Attendu: 200 OK)
+### Changer le numéro 1 par l'id de l'entreprise créer
+PUT {{baseUrl}}/companies/1
+Content-Type: application/json
+
+{
+  "name": "Test Updated",
+  "city": "Strasbourg"
+}
+
+### Supprimer une entreprise (Attendu: 200 OK)
+DELETE {{baseUrl}}/companies/1
+### supprimer l'entreprise avec l'id qu'elle avait quand tu l'as créer. Change le 1 par le nombre de l'id sinon risque de supprimer l'entreprise fourni de base dans le seed. Pour reprendre la base d'origine faire la commande npm run seed.
+
+### ==========================================
+### 2. CATEGORIES
+### ==========================================
+
+### Créer une catégorie (Attendu: 201 Created)
+POST {{baseUrl}}/categories
+Content-Type: application/json
+
+{
+  "name": "Développement Web"
+}
+
+### Lire toutes les catégories (Attendu: 200 OK)
+GET {{baseUrl}}/categories
+
+### Lire une catégorie par ID (Attendu: 200 OK)
+GET {{baseUrl}}/categories/1
+
+### Modifier une catégorie (Attendu: 200 OK)
+PUT {{baseUrl}}/categories/5
+Content-Type: application/json
+
+{
+  "name": "Développement Fullstack"
+}
+
+### Supprimer une catégorie (Attendu: 200 OK)
+DELETE {{baseUrl}}/categories/5
+
+
+### ==========================================
+### 3. PEOPLE (Utilisateurs / Admin)
+### ==========================================
+
+### Créer une personne (Attendu: 201 Created si admin, sinon 401 Unauthorized / 403 Forbidden)
+POST {{baseUrl}}/people
+Content-Type: application/json
+
+{
+  "first_name": "Robin",
+  "last_name": "Milanini",
+  "email": "robin.milanini@example.com",
+  "password": "MonSuperPassword123"
+}
+
+### Lire toutes les personnes (Attendu: 200 OK)
+GET {{baseUrl}}/people?page=1&limit=5
+
+### Lire une personne par ID (Attendu: 200 OK)
+GET {{baseUrl}}/people/1
+
+### Modifier une personne (Attendu: 200 OK). Pour réussir ce test il faut que Max finisse le put sur people.js
+PUT {{baseUrl}}/people/4
+Content-Type: application/json
+
+{
+  "firstname": "Test",
+  "lastname": "test",
+  "email": "nouveau.mail@example.com"
+}
+
+### Supprimer une personne (Attendu: 200 OK)
+DELETE {{baseUrl}}/people/4
+
+
+### ==========================================
+### 4. ADS (Offres d'emploi)
+### ==========================================
+
+### Créer une offre (Attendu: 201 Created)
+POST {{baseUrl}}/ads
+Content-Type: application/json
+
+{
+  "title": "Alternance Développeur Web",
+  "description": "Recherche alternant motivé pour intégrer l'équipe technique.",
+  "company_id": 1,
+  "category_id": 1,
+  "short_description": "Test",
+  "full_description": "Test sur test sur test",
+  "location": "Paris",
+  "category_id": 2,
+  "required_stack": "Tester"
+}
+
+### Lire toutes les offres (Attendu: 200 OK)
+GET {{baseUrl}}/ads?page=1&limit=5
+
+### Lire une offre par ID (Attendu: 200 OK)
+GET {{baseUrl}}/ads/1
+
+### Modifier une offre (Attendu: 200 OK)
+PUT {{baseUrl}}/ads/3
+Content-Type: application/json
+
+{
+  "title": "Alternance DevSecOps / Web",
+  "short_description": "Mise à jour de la description.",
+  "full_description": "Grosse mise à jour",
+  "location": "Paris",
+  "company_id": 1,
+  "category_id": 1,
+  "required_stack": "HTML"
+}
+
+### Supprimer une offre (Attendu: 200 OK)
+DELETE {{baseUrl}}/ads/3
+
+
+### ==========================================
+### 5. APPLICATIONS (Candidatures)
+### ==========================================
+
+### Créer une candidature (Attendu: 201 Created)
+POST {{baseUrl}}/applications
+Content-Type: application/json
+
+{
+  "ad_id": 1,
+  "person_id": 1,
+  "message": "Bonjour, très motivé par cette offre d'alternance...",
+  "status": "sent"
+}
+
+### Lire toutes les candidatures (Attendu: 200 OK)
+GET {{baseUrl}}/applications?page=1&limit=5
+
+### Lire une candidature par ID (Attendu: 200 OK)
+GET {{baseUrl}}/applications/1
+
+### Modifier une candidature (Attendu: 200 OK)
+PUT {{baseUrl}}/applications/2
+Content-Type: application/json
+
+{
+  "ad_id": 1,
+  "person_id": 1,
+  "message": "Lettre de motivation mise à jour avec plus de détails.",
+  "status": "sent"
+}
+
+### Supprimer une candidature (Attendu: 200 OK)
+DELETE {{baseUrl}}/applications/2
+
+
+### ==========================================
+### 6. CAS D'ERREUR (Validation des contrôles)
+### ==========================================
+
+### ID invalide (Attendu: 400 Bad Request)
+GET {{baseUrl}}/companies/abc
+
+### ID inexistant (Attendu: 404 Not Found)
+GET {{baseUrl}}/companies/999999
+
+### Champs requis manquants (Attendu: 400 Bad Request)
+POST {{baseUrl}}/companies
+Content-Type: application/json
+
+{}
+
+### Doublon d'unicité / Email déjà utilisé (Attendu: 409 Conflict)
+POST {{baseUrl}}/people
+Content-Type: application/json
+
+{
+  "first_name": "Robin",
+  "last_name": "Milanini",
+  "email": "robin.milanini@example.com",
+  "password": "MonSuperPassword123"
+}
