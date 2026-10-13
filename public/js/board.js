@@ -38,6 +38,16 @@ const annonces = [
     
 ];
 
+// Paramètres des champs de formulaires : 
+const champs = [
+    { name: "nom", type: "text", placeholder: "Nom" },
+    { name: "prenom", type: "text", placeholder: "Prénom" },
+    { name: "email", type: "email", placeholder: "Email" },
+    { name: "telephone", type: "tel", placeholder: "Téléphone" },
+    { name: "mot_de_passe", type: "password", placeholder: "Mot de passe" },
+    { name: "message", type: "text", placeholder: "Message" },
+];
+
 
 //ZONE : la boîte vide de index.html où on range les cartes
 const zone = document.querySelector("#liste-annonces");
@@ -58,7 +68,7 @@ for (const annonce of annonces) {
     const detail = document.createElement("p");
 
     const formulaire = document.createElement("form");
-    const nom = document.createElement("input");
+    
     const submit = document.createElement("button");
     
 
@@ -74,7 +84,7 @@ for (const annonce of annonces) {
     learnMore.textContent = "Voir plus";
     apply.textContent = "Postuler";
     detail.textContent = annonce.full_description;
-    nom.type = "text";
+    
     submit.type = "submit";
     submit.textContent = "Envoyer"; 
     
@@ -87,7 +97,15 @@ for (const annonce of annonces) {
     carte.append(dateCarte);
     carte.append(learnMore);
     carte.append(apply);
-    formulaire.append(nom);
+    
+    for (const champ of champs) {
+    const saisie = document.createElement("input");
+    saisie.name = champ.name;
+    saisie.type = champ.type;
+    saisie.placeholder = champ.placeholder;
+    formulaire.append(saisie);
+}
+
     formulaire.append(submit);
     zone.append(carte);
     
