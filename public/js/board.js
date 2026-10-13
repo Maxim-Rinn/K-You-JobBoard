@@ -122,7 +122,13 @@ for (const annonce of annonces) {
         carte.append(formulaire);
     })
 
+    // Ne pas afficher les données dans la barre de recherche
+    formulaire.addEventListener("submit", function(event){
+    event.preventDefault();
+    const donnees = Object.fromEntries(new FormData(formulaire));
+console.log(donnees);
 
+});
 }
 
 
