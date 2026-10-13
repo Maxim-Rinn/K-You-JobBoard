@@ -30,6 +30,11 @@ const pool = require('../db');
 const requireAuth = require('../middlewares/auth');
 const requireAdmin = require('../middlewares/admin');
 
+// Candidature (issue #5) : « connecté OU visiteur », et hachage du mot de passe
+// quand un visiteur se crée un compte en postulant
+const optionalAuth = require('../middlewares/optionalAuth');
+const bcrypt = require('bcrypt');
+
 // GET /api/ads?page=1&limit=10 : les annonces actives, page par page
 router.get('/', async (req, res) => {
   // 1. Lire page et limit dans l'URL. Valeurs par défaut : page 1, 10 par page.
@@ -107,6 +112,123 @@ router.get('/:id', async (req, res) => {
   // 5. Un id est unique, donc une seule ligne : on renvoie rows[0] (un objet)
   //    plutôt que le tableau, plus simple à utiliser pour le front
   res.json(result.rows[0]);
+});
+
+
+// POST /api/ads/:id/applications : postuler à une annonce (issue #5)
+//   Connecté (jeton)  : seul { message } est demandé, on utilise son compte.
+//   Visiteur          : { first_name, last_name, email, password, phone?, message }
+//                       -> on crée son compte PUIS sa candidature (décision d'équipe :
+//                       tout candidat a un compte).
+//   201 : la candidature créée
+//   400 : id invalide, champ manquant ou mot de passe trop court
+//   401 : jeton envoyé mais faux ou expiré (répondu par optionalAuth)
+//   404 : annonce inexistante ou désactivée
+//   409 : email déjà utilisé (le visiteur doit se connecter) ou déjà postulé
+router.post('/:id/applications', optionalAuth, async (req, res) => {
+  // 1. L'id de l'annonce, vérifié AVANT la base (comme dans GET /:id)
+  const adId = parseInt(req.params.id);
+  if (!Number.isInteger(adId) || adId < 1) {
+    return res.status(400).json({ error: 'Identifiant invalide' });
+  }
+
+  // 2. Le corps de la requête. Sans corps JSON, req.body est undefined :
+  //    "|| {}" évite un plantage (et donc un 500) au moment de lire les champs
+  const body = req.body || {};
+  const { message } = body;
+
+  // 3. Le message est obligatoire pour tout le monde (connecté ou visiteur)
+  if (typeof message !== 'string' || message.trim() === '') {
+    return res.status(400).json({ error: 'Le message est obligatoire' });
+  }
+
+  // 4. L'annonce existe-t-elle, et est-elle visible ? Sinon 404
+  //    (on ne postule pas à une annonce désactivée, même si on connaît son id)
+  const ad = await pool.query('SELECT id FROM ads WHERE id = $1 AND is_active = TRUE', [adId]);
+  if (ad.rows.length === 0) {
+    return res.status(404).json({ error: 'Annonce introuvable' });
+  }
+
+  // ---- Cas 1 : CONNECTÉ. optionalAuth a rempli req.user grâce au jeton ----
+  if (req.user) {
+    try {
+      const result = await pool.query(`
+        INSERT INTO applications (ad_id, person_id, message)
+        VALUES ($1, $2, $3)
+        RETURNING *
+      `, [adId, req.user.id, message.trim()]);
+      return res.status(201).json(result.rows[0]);
+    } catch (error) {
+      // 23505 = violation d'une contrainte UNIQUE : ici UNIQUE(ad_id, person_id).
+      // On laisse la base refuser le doublon plutôt que de faire un SELECT avant :
+      // c'est elle qui fait foi, même si deux requêtes arrivent en même temps.
+      if (error.code === '23505') {
+        return res.status(409).json({ error: 'Vous avez déjà postulé à cette annonce' });
+      }
+      throw error; // autre erreur : le filet 500 de server.js s'en charge
+    }
+  }
+
+  // ---- Cas 2 : VISITEUR. Mêmes règles que POST /api/auth/register ----
+  const { first_name, last_name, email, password, phone } = body;
+
+  // 5. Champs obligatoires du compte (email et password doivent être du texte,
+  //    sinon .trim() et .length planteraient plus bas)
+  if (!first_name || !last_name || typeof email !== 'string' || typeof password !== 'string') {
+    return res.status(400).json({ error: 'Champs obligatoires manquants' });
+  }
+  if (password.length < 8) {
+    return res.status(400).json({ error: 'Le mot de passe doit faire au moins 8 caractères' });
+  }
+
+  // 6. Email normalisé, puis déjà pris ? -> 409 : il a un compte, qu'il se connecte
+  const cleanEmail = email.trim().toLowerCase();
+  const existing = await pool.query('SELECT id FROM people WHERE email = $1', [cleanEmail]);
+  if (existing.rows.length > 0) {
+    return res.status(409).json({ error: 'Cet email est déjà utilisé : connectez-vous pour postuler' });
+  }
+
+  // 7. Hacher le mot de passe AVANT d'ouvrir la transaction (bcrypt est lent :
+  //    inutile de garder une connexion à la base occupée pendant ce temps)
+  const hash = await bcrypt.hash(password, 10);
+
+  // 8. TRANSACTION : créer le compte ET la candidature, ou RIEN du tout.
+  //    Sans elle, si le 2e INSERT échouait, le compte resterait créé sans
+  //    candidature, et le visiteur qui réessaie recevrait « email déjà utilisé ».
+  //    Une transaction utilise UNE connexion fixe : on l'emprunte au pool.
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN'); // début : rien n'est encore définitif
+
+    // Le compte. Rôle 'user' écrit en dur : un "role" envoyé par le client est ignoré
+    const person = await client.query(`
+      INSERT INTO people (first_name, last_name, email, phone, password_hash, role)
+      VALUES ($1, $2, $3, $4, $5, 'user')
+      RETURNING id
+    `, [first_name, last_name, cleanEmail, phone, hash]);
+
+    // La candidature, avec l'id du compte qu'on vient de créer
+    const application = await client.query(`
+      INSERT INTO applications (ad_id, person_id, message)
+      VALUES ($1, $2, $3)
+      RETURNING *
+    `, [adId, person.rows[0].id, message.trim()]);
+
+    await client.query('COMMIT'); // tout a marché : on rend les deux INSERT définitifs
+    res.status(201).json(application.rows[0]);
+  } catch (error) {
+    await client.query('ROLLBACK'); // un problème : on annule TOUT, la base est intacte
+    // 23505 ici = l'email a été pris entre notre SELECT et notre INSERT
+    // (deux inscriptions simultanées) : même réponse qu'à l'étape 6
+    if (error.code === '23505') {
+      return res.status(409).json({ error: 'Cet email est déjà utilisé : connectez-vous pour postuler' });
+    }
+    throw error;
+  } finally {
+    // Toujours rendre la connexion au pool, succès ou échec,
+    // sinon le pool se vide et le serveur finit par ne plus répondre
+    client.release();
+  }
 });
 
 
