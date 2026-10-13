@@ -1,0 +1,37 @@
+# =====================================================================
+#  docker-compose.yml : la base PostgreSQL du Job Board, lancée avec Docker
+#  Démarrer : docker compose up -d      Arrêter : docker compose stop
+#  Les ${...} sont lus automatiquement dans le fichier .env (jamais commité)
+# =====================================================================
+
+services:
+  # Le seul service : la base de données, appelée « db »
+  db:
+    # Image officielle de PostgreSQL, version fixe (jamais latest)
+    # pour que toute l'équipe ait exactement la même base
+    image: postgres:16
+
+    # Au PREMIER démarrage, l'image crée cet utilisateur et cette base.
+    # Mêmes valeurs que celles utilisées par l'API (db/index.js lit les PG... du .env)
+    environment:
+      POSTGRES_USER: ${PGUSER}
+      POSTGRES_PASSWORD: ${PGPASSWORD}
+      POSTGRES_DB: ${PGDATABASE}
+
+    # "adresse:port du Mac:port du conteneur" : l'API joint la base sur localhost:5432.
+    # 127.0.0.1 = seulement ce PC : la base n'est PAS accessible depuis le réseau
+    # (wifi de l'école). Sans cette adresse, Docker l'ouvrirait à tout le réseau.
+    ports:
+      - "127.0.0.1:5432:5432"
+
+    volumes:
+      # Les données sont rangées dans le volume « pgdata » : elles survivent
+      # à un docker compose down (seul down -v les efface)
+      - pgdata:/var/lib/postgresql/data
+      # schema.sql est exécuté automatiquement au 1er démarrage (volume vide)
+      # :ro = lecture seule, le conteneur ne peut pas modifier notre fichier
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+
+# Déclaration du volume nommé utilisé plus haut
+volumes:
+  pgdata:
