@@ -15,6 +15,10 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 
+// Contrôles d'accès (issue #7) : d'abord « connecté », puis « admin »
+const requireAuth = require('../middlewares/auth');
+const requireAdmin = require('../middlewares/admin');
+
 // 1. GET /api/companies - Liste paginée + métadonnées
 router.get('/', async (req, res, next) => {
   try {
@@ -68,7 +72,7 @@ router.get('/:id', async (req, res, next) => {
 });
 
 // 3. POST /api/companies - Créer une nouvelle entreprise
-router.post('/', async (req, res, next) => {
+router.post('/', requireAuth, requireAdmin, async (req, res, next) => {
     try {
         const { name, city, website, description } = req.body;
         
@@ -99,7 +103,7 @@ router.post('/', async (req, res, next) => {
 });
 
 // 4. PUT /api/companies/:id - Mettre à jour une entreprise
-router.put('/:id', async (req, res, next) => {
+router.put('/:id', requireAuth, requireAdmin, async (req, res, next) => {
     try {
         const id = parseInt(req.params.id);
         if (!Number.isInteger(id) || id < 1) {
@@ -139,7 +143,7 @@ router.put('/:id', async (req, res, next) => {
 });
 
 // 5. DELETE /api/companies/:id - Supprimer une entreprise
-router.delete('/:id', async (req, res, next) => {
+router.delete('/:id', requireAuth, requireAdmin, async (req, res, next) => {
     try {
         const id = parseInt(req.params.id);
         if (!Number.isInteger(id) || id < 1) {
