@@ -1,5 +1,10 @@
 
-//Données fictives (les éléments "" seront modifiés une fois l'API terminée)
+// board.js : affiche les annonces du job board sous forme de cartes.
+// Chaque carte a un bouton « Voir plus » (affiche le détail) et un bouton « Postuler » (affiche un formulaire).
+// Les annonces sont FICTIVES. À remplacer par un fetch() sur GET /api/ads quand l'API sera branchée (issue #18).
+
+// Données fictives : mêmes noms de champs que l'API. full_description vient de GET /api/ads/:id.
+
 const annonces = [
     {
         id: 1,
@@ -38,7 +43,7 @@ const annonces = [
     
 ];
 
-// Paramètres des champs de formulaires : 
+// Champs du formulaire « Postuler ». `name` = clé envoyée à l'API (noms à confirmer avec Max, route POST /api/ads/:id/applications).
 const champs = [
     { name: "nom", type: "text", placeholder: "Nom" },
     { name: "prenom", type: "text", placeholder: "Prénom" },
@@ -52,7 +57,7 @@ const champs = [
 //ZONE : la boîte vide de index.html où on range les cartes
 const zone = document.querySelector("#liste-annonces");
 
-//Faire une BOUCLE
+// Une carte par annonce. Les éléments sont recréés à chaque tour : chaque carte a ses propres boutons et son propre formulaire.
 for (const annonce of annonces) {
     
     //1. fabriquer les éléments (pas encore visible dans la page)
@@ -98,37 +103,36 @@ for (const annonce of annonces) {
     carte.append(learnMore);
     carte.append(apply);
     
-    for (const champ of champs) {
-    const saisie = document.createElement("input");
-    saisie.name = champ.name;
-    saisie.type = champ.type;
-    saisie.placeholder = champ.placeholder;
-    formulaire.append(saisie);
-}
+        for (const champ of champs) {
+        const saisie = document.createElement("input");
+        saisie.name = champ.name;
+        saisie.type = champ.type;
+        saisie.placeholder = champ.placeholder;
+        formulaire.append(saisie);
+    }
 
     formulaire.append(submit);
     zone.append(carte);
     
-    // faire réagir les boutons : le "guetteur"
+    // faire réagir les boutons : écouteurs d'événements (clic sur les boutons, envoi du formulaire).
     
     learnMore.addEventListener("click", function(){
-        console.log("clic sur", annonce.title);
         carte.append(detail);
         
     })
     
-    // faire réagir le boutton POSTULER
+    // faire réagir le bouton POSTULER
     apply.addEventListener("click", function(){
         carte.append(formulaire);
     })
 
-    // Ne pas afficher les données dans la barre de recherche
+    // preventDefault() empêche le rechargement de la page (sinon les données partiraient dans l'adresse).
     formulaire.addEventListener("submit", function(event){
     event.preventDefault();
     const donnees = Object.fromEntries(new FormData(formulaire));
 console.log(donnees);
 
-});
+    });
 }
 
 
