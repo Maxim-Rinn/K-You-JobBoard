@@ -43,3 +43,15 @@ Comptes de test créés par le seed : `admin@jobboard.fr` / `admin123`, `recruit
 | `docker compose logs db` | Affiche les messages de PostgreSQL |
 | `docker compose stop` | Arrête la base (les données sont gardées) |
 | `docker compose down -v` | Supprime la base **et ses données** ; puis `up -d` et `npm run seed` pour repartir de zéro (par exemple après une modification de `db/schema.sql`) |
+
+## Choix de fonctionnement
+
+### Postuler à une annonce : `POST /api/ads/:id/applications`
+
+**Tout candidat a un compte** (décision d'équipe), mais on peut le créer directement en postulant :
+
+- **Connecté** (en-tête `Authorization: Bearer <jeton>`) : seul `message` est envoyé, la candidature est liée au compte du jeton.
+- **Visiteur** (sans jeton) : `first_name`, `last_name`, `email`, `password` (8 caractères minimum), `phone` (facultatif) et `message`. Le compte (mot de passe haché avec bcrypt, email en minuscules) et la candidature sont créés **ensemble dans une transaction** : si l'un échoue, rien n'est enregistré.
+- **Email déjà utilisé** par un visiteur : `409`, il doit se connecter pour postuler (un compte existant n'est jamais réutilisé sans mot de passe).
+- **Une seule candidature par personne et par annonce** : un doublon renvoie `409`.
+- Annonce inexistante ou désactivée : `404`. Champ manquant : `400`. Jeton faux ou expiré : `401`.
