@@ -12,6 +12,10 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
+
+// Contrôles d'accès (issue #7) : d'abord « connecté », puis « admin »
+const requireAuth = require('../middlewares/auth');
+const requireAdmin = require('../middlewares/admin');
 const bcrypt = require('bcrypt');
 
 // ----- Compte de l'utilisateur connecté (Max) -----
@@ -19,14 +23,11 @@ const bcrypt = require('bcrypt');
 
 // ----- Routes admin (Robin) -----
 //GET /api/people : liste de toutes les personnes
-router.get('/', async (req, res, next) => {
+router.get('/', requireAuth, requireAdmin, async (req, res, next) => {
     try {
         const page  = Math.max(parseInt(req.query.page) || 1, 1);
         const limit = Math.min(Math.max(parseInt(req.query.limit) || 10, 1), 50);
         const offset = (page - 1) * limit;
-        //if (!req.user || req.user.role !== 'admin') {
-        //    return res.status(403).json({ error: 'Accès refusé : vous devez être administrateur pour accéder à cette ressource.'});
-        //}
 
         const result = await db.query('SELECT id, first_name, last_name, email, role, created_at FROM people ORDER BY id DESC LIMIT $1 OFFSET $2', [limit, offset]);
         const countResult = await db.query('SELECT COUNT(*) FROM people');
@@ -49,11 +50,8 @@ router.get('/', async (req, res, next) => {
 });
 
 // GET /api/people/:id - Récupérer une personne spécifique
-router.get('/:id', async (req, res, next) => {
+router.get('/:id', requireAuth, requireAdmin, async (req, res, next) => {
     try {
-        //if (!req.user || req.user.role !== 'admin') {
-        //    return res.status(403).json({ error: 'Accès refusé : vous devez être administrateur pour accéder à cette ressource.'});
-        //}
         const id = parseInt(req.params.id);
         if (!Number.isInteger(id) || id < 1) {
             return res.status(400).json({ error: 'Identifiant invalide' });
@@ -70,11 +68,8 @@ router.get('/:id', async (req, res, next) => {
 });
 
 // POST /api/people - Créer une nouvelle personne
-router.post('/', async (req, res, next) => {
+router.post('/', requireAuth, requireAdmin, async (req, res, next) => {
     try {
-        //if (!req.user || req.user.role !== 'admin') {
-        //    return res.status(403).json({ error: 'Accès refusé : vous devez être administrateur pour accéder à cette ressource.'});
-        //}
         const { first_name, last_name, email, role, password } = req.body;
         const roleValue = role || 'user'; // donner une valeur par défaut pour éviter les erreurs si role n'est pas fourni
         if (!first_name || !last_name || !email || !password) {
@@ -97,11 +92,8 @@ router.post('/', async (req, res, next) => {
 });
 
 // DELETE /api/people/:id - Supprimer une personne
-router.delete('/:id', async (req, res, next) => {
+router.delete('/:id', requireAuth, requireAdmin, async (req, res, next) => {
     try {
-        //if (!req.user || req.user.role !== 'admin') {
-        //    return res.status(403).json({ error: 'Accès refusé : vous devez être administrateur pour accéder à cette ressource.'});
-        //}
         const id = parseInt(req.params.id);
         if (!Number.isInteger(id) || id < 1) {
             return res.status(400).json({ error: 'Identifiant invalide' });

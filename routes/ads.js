@@ -26,6 +26,10 @@ const router = express.Router();
 // La connexion à la base (on remonte d'un dossier : routes/ -> racine -> db/)
 const pool = require('../db');
 
+// Contrôles d'accès (issue #7) : d'abord « connecté », puis « admin »
+const requireAuth = require('../middlewares/auth');
+const requireAdmin = require('../middlewares/admin');
+
 // GET /api/ads?page=1&limit=10 : les annonces actives, page par page
 router.get('/', async (req, res) => {
   // 1. Lire page et limit dans l'URL. Valeurs par défaut : page 1, 10 par page.
@@ -108,7 +112,7 @@ router.get('/:id', async (req, res) => {
 
 // ----- Routes admin (Robin) -----
 // POST /api/ads - Créer une nouvelle annonce (Admin)
-router.post('/', async (req, res, next) => {
+router.post('/', requireAuth, requireAdmin, async (req, res, next) => {
     try {
         const {
             title,
@@ -179,7 +183,7 @@ router.post('/', async (req, res, next) => {
 });
 
 // PUT /api/ads/:id - Mettre à jour une annonce (Admin)
-router.put('/:id', async (req, res, next) => {
+router.put('/:id', requireAuth, requireAdmin, async (req, res, next) => {
     try {
         const id = parseInt(req.params.id);
         if (!Number.isInteger(id) || id < 1) {
@@ -268,7 +272,7 @@ router.put('/:id', async (req, res, next) => {
 });
 
 // DELETE /api/ads/:id - Supprimer une annonce (Admin)
-router.delete('/:id', async (req, res, next) => {
+router.delete('/:id', requireAuth, requireAdmin, async (req, res, next) => {
     try {
         const id = parseInt(req.params.id);
         if (!Number.isInteger(id) || id < 1) {

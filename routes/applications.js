@@ -12,8 +12,12 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 
+// Contrôles d'accès (issue #7) : d'abord « connecté », puis « admin »
+const requireAuth = require('../middlewares/auth');
+const requireAdmin = require('../middlewares/admin');
+
 // POST /api/applications - Créer une nouvelle candidature
-router.post('/', async (req, res, next) => {
+router.post('/', requireAuth, requireAdmin, async (req, res, next) => {
     try {
         const { ad_id, person_id, message, status } = req.body;
         const statusValues = status ? status.trim() : 'sent';
@@ -50,7 +54,7 @@ router.post('/', async (req, res, next) => {
 });
 
 //GET /api/applications - Liste paginée + métadonnées
-router.get('/', async (req, res, next) => {
+router.get('/', requireAuth, requireAdmin, async (req, res, next) => {
     try {
         const page  = Math.max(parseInt(req.query.page) || 1, 1);
         const limit = Math.min(Math.max(parseInt(req.query.limit) || 10, 1), 50);
@@ -80,7 +84,7 @@ router.get('/', async (req, res, next) => {
 });
 
 //GET /api/applications/:id - Récupérer une application spécifique
-router.get('/:id', async (req, res, next) => {
+router.get('/:id', requireAuth, requireAdmin, async (req, res, next) => {
     try {
         const id = parseInt(req.params.id);
         if (!Number.isInteger(id) || id < 1) {
@@ -102,7 +106,7 @@ router.get('/:id', async (req, res, next) => {
 });
 
 //PUT /api/applications/:id - Mettre à jour une candidature
-router.put('/:id', async (req, res, next) => {
+router.put('/:id', requireAuth, requireAdmin, async (req, res, next) => {
     try {
         const id = parseInt(req.params.id);
         if (!Number.isInteger(id) || id < 1) {
@@ -142,7 +146,7 @@ router.put('/:id', async (req, res, next) => {
 });
 
 // DELETE /api/applications/:id - Supprimer une candidature
-router.delete('/:id', async (req, res, next) => {
+router.delete('/:id', requireAuth, requireAdmin, async (req, res, next) => {
     try {
         const id = parseInt(req.params.id);
         if (!Number.isInteger(id) || id < 1) {
