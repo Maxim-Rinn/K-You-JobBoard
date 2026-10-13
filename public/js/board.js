@@ -56,6 +56,10 @@ for (const annonce of annonces) {
     const learnMore = document.createElement("button");
     const apply = document.createElement("button");
     const detail = document.createElement("p");
+
+    const formulaire = document.createElement("form");
+    const nom = document.createElement("input");
+    const submit = document.createElement("button");
     
 
     //2. "Remplir l'assiette" 
@@ -70,6 +74,9 @@ for (const annonce of annonces) {
     learnMore.textContent = "Voir plus";
     apply.textContent = "Postuler";
     detail.textContent = annonce.full_description;
+    nom.type = "text";
+    submit.type = "submit";
+    submit.textContent = "Envoyer"; 
     
     //3. assembler : le titre dans la carte, puis la carte dans la zone (elle apparaît)
     carte.append(titre);
@@ -80,15 +87,24 @@ for (const annonce of annonces) {
     carte.append(dateCarte);
     carte.append(learnMore);
     carte.append(apply);
+    formulaire.append(nom);
+    formulaire.append(submit);
     zone.append(carte);
     
-    // faire réagir les boutons : le "ghetteur"
+    // faire réagir les boutons : le "guetteur"
     
     learnMore.addEventListener("click", function(){
         console.log("clic sur", annonce.title);
         carte.append(detail);
         
     })
+    
+    // faire réagir le boutton POSTULER
+    apply.addEventListener("click", function(){
+        carte.append(formulaire);
+    })
+
+
 }
 
 
