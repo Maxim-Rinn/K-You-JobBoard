@@ -11,8 +11,12 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 
+// Contrôles d'accès (issue #7) : d'abord « connecté », puis « admin »
+const requireAuth = require('../middlewares/auth');
+const requireAdmin = require('../middlewares/admin');
+
 // POST /api/categories - Créer une nouvelle categorie
-router.post('/', async (req, res, next) => {
+router.post('/', requireAuth, requireAdmin, async (req, res, next) => {
     try {
         const { name } = req.body;
 
@@ -87,7 +91,7 @@ router.get('/:id', async (req, res, next) => {
 });
 
 //PUT /api/categories/:id - Mettre à jour une catégorie
-router.put('/:id', async (req, res, next) => {
+router.put('/:id', requireAuth, requireAdmin, async (req, res, next) => {
     try {
         const id = parseInt(req.params.id);
         if (!Number.isInteger(id) || id < 1) {
@@ -121,7 +125,7 @@ router.put('/:id', async (req, res, next) => {
 });
 
 // DELETE /api/categories/:id - Supprimer une catégorie
-router.delete('/:id', async (req, res, next) => {
+router.delete('/:id', requireAuth, requireAdmin, async (req, res, next) => {
     try {
         const id = parseInt(req.params.id);
         if (!Number.isInteger(id) || id < 1) {
