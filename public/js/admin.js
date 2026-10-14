@@ -1,3 +1,4 @@
+//vérifier le token au chargement
 document.addEventListener("DOMContentLoaded", () => {
     const token = localStorage.getItem("token"); // ou sessionStorage si on veut que ce soit uniquement visible par un onglet de navigateur au lieu de toutes les fenêtres
     if (!token) {
@@ -9,6 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
     loadTableData('companies', 1);
 });
 
+//Fonction centrale de chargement des données
 let currentPage = 1;
 const limit = 10;
 let currentTable = 'companies';
@@ -88,8 +90,8 @@ function renderTable(data) {
         //Boutons d'action
         const tdActions = document.createElement("td");
         tdActions.innerHTML = `
-        <button class="btn-edit" onclick="openEditModal(${item.id})">Modifier</button>
-        <button class="btn-delete" onclick="deleteItem(${item.id})">Supprimer</button>
+            <button class="btn-edit" onclick="openEditModal(${item.id})">Modifier</button>
+            <button class="btn-delete" onclick="deleteItem(${item.id})">Supprimer</button>
         `;
         tr.appendChild(tdActions);
         tableBody.appendChild(tr);
@@ -97,4 +99,60 @@ function renderTable(data) {
 
     //Mettre à jour l'affichage de la page
     document.querySelector("#page-info").textContent = `Page ${currentPage}`;
+}
+
+//Selecteur de table et pagination
+document.addEventListener("DOMContentLoaded", () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+        window.location.href = "login.html";
+        return;
+    }
+
+    // Charger la première table par défaut
+    loadTableData(currentTable, currentPage);
+
+    // Changement de table
+    document.querySelector("#table-select").addEventListener("change", (e) => {
+        currentTable = e.target.value;
+        currentPage = 1;
+        loadTableData(currentTable, currentPage);
+    });
+
+    // Pagination Précédent
+    document.querySelector("#btn-prev").addEventListener("click", () => {
+        if (currentPage > 1) {
+            currentPage--;
+            loadTableData(currentTable, currentPage);
+        }
+    });
+
+    // Pagination Suivant
+    document.querySelector("#btn-next").addEventListener("click", () => {
+        currentPage++;
+        loadTableData(currentTable, currentPage);
+    });
+});
+
+//Suppression
+async function deleteItem(id) {
+    if (!confirm("Voulez-vous vraiment supprimer cet enregistrement ?")) return;
+
+    const token = localStorage.getItem("token");
+    try {
+        const response = await fetch(`http://localhost:3000/api/admin/${currentTable}/${id}`, {
+            method: "DELETE",
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        });
+
+        if (response.ok) {
+            loadTableData(currentTable, currentPage);
+        } else {
+            alert("Erreur lors de la suppression.");
+        }
+    } catch (error) {
+        console.error("Erreur suppression :", error);
+    }
 }
