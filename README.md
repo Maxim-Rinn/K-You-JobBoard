@@ -46,7 +46,7 @@ Comptes de test créés par le seed : `admin@jobboard.fr` / `admin123`, `recruit
 
 ## Choix de fonctionnement
 
-### Postuler à une annonce : `POST /api/ads/:id/applications`
+### Postuler à une annonce : `POST /ads/:id/applications`
 
 **Tout candidat a un compte** (décision d'équipe), mais on peut le créer directement en postulant :
 
