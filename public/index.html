@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Board — K-YOU</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght,GRAD@6..144,1..1000,0..100&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Orbitron:wght@900&display=swap" rel="stylesheet">
+</head>
+<body>
+<header>
+    <nav>
+        <a href="index.html" class="logo">
+            <span class="roll-mask">
+                <span class="roll">
+                    <span>K-YOU</span>
+                    <span>K-YOU</span>
+                </span>
+            </span>
+        </a>
+        <div id="nav-links">
+            <a href="login.html" id="link-login">
+                <span class="roll-mask">
+                    <span class="roll">
+                        <span>Connexion</span>
+                        <span>Connexion</span>
+                    </span>
+                </span>
+            </a>
+            <a href="account.html" id="link-account" style="display: none;">
+                <span class="roll-mask">
+                    <span class="roll">
+                        <span>Mon Compte</span>
+                        <span>Mon Compte</span>
+                    </span>
+                </span>
+            </a>
+            <a href="admin.html" id="link-admin" style="display: none;">
+                <span class="roll-mask">
+                    <span class="roll">
+                        <span>Entreprise</span>
+                        <span>Entreprise</span>
+                    </span>
+                </span>
+            </a>
+            <button id="link-logout" style="display: none;">
+                <span class="roll-mask">
+                    <span class="roll">
+                        <span>Déconnexion</span>
+                        <span>Déconnexion</span>
+                    </span>
+                </span>
+            </button>
+        </div>
+    </nav>
+</header>
+
+<main>
+    <section class="hero">
+        <h1>Prochain commit : ton nouveau job.</h1>
+        <p>Rejoins les meilleures startups et entreprises tech de la région.</p>
+    </section>
+
+    <!-- Zone de filtres (Optionnel brief / Décision d'équipe) -->
+    <section class="filters">
+        <input type="text" id="search-input" placeholder="Rechercher une annonce">
+        <select id="category-filter">
+        <option value="">Toutes les catégories</option>
+        </select>
+    </section>
+
+    <!-- Liste dynamique des annonces (Obligatoire brief) -->
+    <section class="ads-container">
+        <!-- Liste des annonces -->
+        <div id="liste-annonces"></div>
+
+        <!-- Zone d'affichage des détails d'une annonce sélectionnée -->
+        <div id="ad-detail-view" style="display: none;">
+            <!-- Injecté dynamiquement par JS lors du clic sur "Learn More" -->
+        </div>
+
+        <!-- Contrôles de pagination -->
+        <div id="pagination-controls" class="pagination"></div>
+    </section>
+
+    <!-- Modal de candidature -->
+    <div id="apply-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span id="close-apply-modal" class="close-btn">&times;</span>
+        <h2>Postuler à l'offre</h2>
+        <form id="apply-form">
+        <input type="hidden" id="apply-ad-id">
+
+        <!-- Champs perso (masqués ou pré-remplis si l'utilisateur est connecté) -->
+        <div id="applicant-info-fields">
+            <label for="apply-name">Nom complet :</label>
+            <input type="text" id="apply-name" required>
+
+            <label for="apply-email">Email :</label>
+            <input type="email" id="apply-email" required>
+
+            <label for="apply-phone">Téléphone :</label>
+            <input type="tel" id="apply-phone">
+        </div>
+
+        <label for="apply-message">Message / Lettre de motivation :</label>
+        <textarea id="apply-message" rows="5" required placeholder="Expliquez pourquoi vous souhaitez postuler..."></textarea>
+
+        <button type="submit" id="btn-submit-apply">
+            <span class="roll-mask">
+                <span class="roll">
+                    <span>Envoyer la candidature</span>
+                    <span>Envoyer la candidature</span>
+                </span>
+            </span>
+        </button>
+        </form>
+    </div>
+    </div>
+</main>
+
+<footer>
+    <p>&copy; 2026 K-YOU — Job Board Tech.</p>
+</footer>
+
+<script src="js/api.js"></script>
+<script src="js/board.js"></script>
+</body>
+</html>
