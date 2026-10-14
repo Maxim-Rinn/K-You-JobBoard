@@ -1,12 +1,12 @@
 // =====================================================================
-//  routes/companies.js : les entreprises (préfixe /api/companies)
+//  routes/companies.js : les entreprises (préfixe /companies)
 // ---------------------------------------------------------------------
 //  CRUD admin (Robin) :
-//    GET    /     ->  liste paginée     (GET    /api/companies?page=&limit=)
-//    POST   /     ->  créer             (POST   /api/companies)
-//    GET    /:id  ->  lire une          (GET    /api/companies/3)
-//    PUT    /:id  ->  modifier          (PUT    /api/companies/3)
-//    DELETE /:id  ->  supprimer         (DELETE /api/companies/3)
+//    GET    /     ->  liste paginée     (GET    /companies?page=&limit=)
+//    POST   /     ->  créer             (POST   /companies)
+//    GET    /:id  ->  lire une          (GET    /companies/3)
+//    PUT    /:id  ->  modifier          (PUT    /companies/3)
+//    DELETE /:id  ->  supprimer         (DELETE /companies/3)
 // =====================================================================
 
 // Même squelette que les autres fichiers de routes : voir routes/ads.js
@@ -19,10 +19,10 @@ const db = require('../db');
 const requireAuth = require('../middlewares/auth');
 const requireAdmin = require('../middlewares/admin');
 
-// 1. GET /api/companies - Liste paginée + métadonnées
+// 1. GET /companies - Liste paginée + métadonnées
 router.get('/', async (req, res, next) => {
   try {
-    // 1. On lit les paramètres passés dans l'URL (ex: /api/companies?page=1&limit=10)
+    // 1. On lit les paramètres passés dans l'URL (ex: /companies?page=1&limit=10)
     const page  = Math.max(parseInt(req.query.page) || 1, 1);
     const limit = Math.min(Math.max(parseInt(req.query.limit) || 10, 1), 50);
     // 2. On calcule l'offset avec ta formule
@@ -53,7 +53,7 @@ router.get('/', async (req, res, next) => {
   }
 });
 
-// 2. GET /api/companies/:id - Récupérer une entreprise spécifique
+// 2. GET /companies/:id - Récupérer une entreprise spécifique
 router.get('/:id', async (req, res, next) => {
     try {
         const id = parseInt(req.params.id);
@@ -71,7 +71,7 @@ router.get('/:id', async (req, res, next) => {
     }
 });
 
-// 3. POST /api/companies - Créer une nouvelle entreprise
+// 3. POST /companies - Créer une nouvelle entreprise
 router.post('/', requireAuth, requireAdmin, async (req, res, next) => {
     try {
         const { name, city, website, description } = req.body;
@@ -102,7 +102,7 @@ router.post('/', requireAuth, requireAdmin, async (req, res, next) => {
     }
 });
 
-// 4. PUT /api/companies/:id - Mettre à jour une entreprise
+// 4. PUT /companies/:id - Mettre à jour une entreprise
 router.put('/:id', requireAuth, requireAdmin, async (req, res, next) => {
     try {
         const id = parseInt(req.params.id);
@@ -142,7 +142,7 @@ router.put('/:id', requireAuth, requireAdmin, async (req, res, next) => {
     }
 });
 
-// 5. DELETE /api/companies/:id - Supprimer une entreprise
+// 5. DELETE /companies/:id - Supprimer une entreprise
 router.delete('/:id', requireAuth, requireAdmin, async (req, res, next) => {
     try {
         const id = parseInt(req.params.id);

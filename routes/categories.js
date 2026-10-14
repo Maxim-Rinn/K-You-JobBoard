@@ -1,5 +1,5 @@
 // =====================================================================
-//  routes/categories.js : les catégories (préfixe /api/categories)
+//  routes/categories.js : les catégories (préfixe /categories)
 // ---------------------------------------------------------------------
 //  CRUD admin (Robin), même modèle que routes/companies.js :
 //    GET / , POST / , GET /:id , PUT /:id , DELETE /:id
@@ -15,7 +15,7 @@ const db = require('../db');
 const requireAuth = require('../middlewares/auth');
 const requireAdmin = require('../middlewares/admin');
 
-// POST /api/categories - Créer une nouvelle categorie
+// POST /categories - Créer une nouvelle categorie
 router.post('/', requireAuth, requireAdmin, async (req, res, next) => {
     try {
         const { name } = req.body;
@@ -41,7 +41,7 @@ router.post('/', requireAuth, requireAdmin, async (req, res, next) => {
     }
 });
 
-//GET /api/categories - Liste paginée + métadonnées
+//GET /categories - Liste paginée + métadonnées
 
 router.get('/', async (req, res, next) => {
     try {
@@ -72,7 +72,7 @@ router.get('/', async (req, res, next) => {
     }
 });
 
-//GET /api/categories/:id - Récupérer une categories spécifique
+//GET /categories/:id - Récupérer une categories spécifique
 router.get('/:id', async (req, res, next) => {
     try {
         const id = parseInt(req.params.id);
@@ -90,7 +90,7 @@ router.get('/:id', async (req, res, next) => {
     }
 });
 
-//PUT /api/categories/:id - Mettre à jour une catégorie
+//PUT /categories/:id - Mettre à jour une catégorie
 router.put('/:id', requireAuth, requireAdmin, async (req, res, next) => {
     try {
         const id = parseInt(req.params.id);
@@ -124,7 +124,7 @@ router.put('/:id', requireAuth, requireAdmin, async (req, res, next) => {
     }
 });
 
-// DELETE /api/categories/:id - Supprimer une catégorie
+// DELETE /categories/:id - Supprimer une catégorie
 router.delete('/:id', requireAuth, requireAdmin, async (req, res, next) => {
     try {
         const id = parseInt(req.params.id);

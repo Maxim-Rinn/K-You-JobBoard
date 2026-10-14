@@ -1,11 +1,11 @@
 // =====================================================================
-//  routes/auth.js : inscription et connexion (préfixe /api/auth)
+//  routes/auth.js : inscription et connexion (préfixe /auth)
 // ---------------------------------------------------------------------
-//  server.js envoie ici les demandes qui commencent par /api/auth.
+//  server.js envoie ici les demandes qui commencent par /auth.
 //  Routes prévues (Max) :
-//    POST /register  ->  POST /api/auth/register  (créer un compte)
-//    POST /login     ->  POST /api/auth/login     (se connecter)
-//    GET  /me        ->  GET  /api/auth/me        (qui suis-je ?)
+//    POST /register  ->  POST /auth/register  (créer un compte)
+//    POST /login     ->  POST /auth/login     (se connecter)
+//    GET  /me        ->  GET  /auth/me        (qui suis-je ?)
 // =====================================================================
 
 // Même squelette que les autres fichiers de routes : voir routes/ads.js
@@ -24,7 +24,7 @@ const jwt = require('jsonwebtoken');
 const requireAuth = require('../middlewares/auth');
 
 
-// POST /api/auth/register : créer un compte
+// POST /auth/register : créer un compte
 //   201 : compte créé (sans le password_hash dans la réponse)
 //   400 : champ manquant ou mot de passe trop court
 //   409 : email déjà utilisé
@@ -84,7 +84,7 @@ router.post('/register', async (req, res) => {
 });
 
 
-// POST /api/auth/login : se connecter
+// POST /auth/login : se connecter
 //   200 : { token, user } — le jeton à renvoyer ensuite dans chaque requête
 //   400 : email ou mot de passe manquant
 //   401 : email inconnu OU mauvais mot de passe (même message dans les deux cas)
@@ -140,7 +140,7 @@ router.post('/login', async (req, res) => {
 });
 
 
-// GET /api/auth/me : qui suis-je ? (sert à préremplir le formulaire Apply)
+// GET /auth/me : qui suis-je ? (sert à préremplir le formulaire Apply)
 //   200 : la personne connectée (SANS le password_hash)
 //   401 : pas de jeton, ou jeton faux / expiré (répondu par requireAuth)
 //   404 : le compte n'existe plus
