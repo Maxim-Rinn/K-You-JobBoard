@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K-YOU - Entreprise</title>
+    <link rel="stylesheet" href="css/admin.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght,GRAD@6..144,1..1000,0..100&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Orbitron:wght@900&display=swap" rel="stylesheet">
+</head>
+<body>
+<header>
+    <nav>
+        <a href="index.html" class="logo">
+            <span class="roll-mask">
+                <span class="roll">
+                    <span>K-YOU</span>
+                    <span>K-YOU</span>
+                </span>
+            </span>
+        </a>
+        <div id="nav-links">
+            <a href="login.html" id="link-login">
+                <span class="roll-mask">
+                    <span class="roll">
+                        <span>Connexion</span>
+                        <span>Connexion</span>
+                    </span>
+                </span>
+            </a>
+            <a href="account.html" id="link-account" style="display: none;">
+                <span class="roll-mask">
+                    <span class="roll">
+                        <span>Mon Compte</span>
+                        <span>Mon Compte</span>
+                    </span>
+                </span>
+            </a>
+            <a href="admin.html" id="link-admin" style="display: none;">
+                <span class="roll-mask">
+                    <span class="roll">
+                        <span>Entreprise</span>
+                        <span>Entreprise</span>
+                    </span>
+                </span>
+            </a>
+            <button id="link-logout" style="display: none;">
+                <span class="roll-mask">
+                    <span class="roll">
+                        <span>Déconnexion</span>
+                        <span>Déconnexion</span>
+                    </span>
+                </span>
+            </button>
+        </div>
+    </nav>
+</header>
+
+<main>
+    <!-- En-tête de la page admin avec sélection de table et bouton d'ajout -->
+    <section class="admin-header-section">
+        <h2>Panneau d'Administration</h2>
+        <div class="admin-controls">
+            <select id="table-select">
+                <option value="companies">Entreprises</option>
+                <option value="ads">Annonces</option>
+                <option value="people">Utilisateurs / Candidats</option>
+                <option value="categories">Catégories</option>
+                <option value="applications">Candidatures</option>
+            </select>
+            <button id="btn-open-create-modal">
+                <span class="roll-mask">
+                    <span class="roll">
+                        <span>Ajouter</span>
+                        <span>Ajouter</span>
+                    </span>
+                </span>
+            </button>
+        </div>
+    </section>
+
+    <!-- Tableau dynamique des enregistrements -->
+    <section class="admin-table-container">
+        <table id="admin-table">
+            <thead>
+                <!-- Les en-têtes (colonnes) seront injectés dynamiquement en JS -->
+            </thead>
+            <tbody>
+                <!-- Les lignes de données seront injectées dynamiquement en JS -->
+            </tbody>
+        </table>
+
+        <!-- Contrôles de pagination -->
+        <div id="pagination-controls" class="pagination">
+            <button id="btn-prev">
+                <span class="roll-mask">
+                    <span class="roll">
+                        <span>Précédent</span>
+                        <span>Précédent</span>
+                    </span>
+                </span>
+            </button>
+            <span id="page-info">Page 1</span>
+            <button id="btn-next">
+                <span class="roll-mask">
+                    <span class="roll">
+                        <span>Suivant</span>
+                        <span>Suivant</span>
+                    </span>
+                </span>
+            </button>
+        </div>
+    </section>
+
+    <!-- Fenêtre modale pour la création / modification -->
+    <div id="admin-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span id="close-admin-modal" class="close-btn">&times;</span>
+            <h3 id="modal-title">Créer / Modifier un enregistrement</h3>
+            <form id="admin-form">
+                <!-- Les champs du formulaire seront générés dynamiquement selon la table -->
+                <div id="form-fields-container"></div>
+                <button type="submit" id="btn-submit-admin">
+                    <span class="roll-mask">
+                        <span class="roll">
+                            <span>Enregistrer</span>
+                            <span>Enregistrer</span>
+                        </span>
+                    </span>
+                </button>
+            </form>
+        </div>
+    </div>
+</main>
+
+<footer>
+    <p>&copy; 2026 K-YOU — Job Board Tech.</p>
+</footer>
+
+<script src="js/api.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>
