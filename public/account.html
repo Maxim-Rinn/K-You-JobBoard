@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon compte — K-YOU</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght,GRAD@6..144,1..1000,0..100&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Orbitron:wght@900&display=swap" rel="stylesheet">
+</head>
+<body>
+<header>
+    <nav>
+        <a href="index.html" class="logo">K-YOU</a>
+    </nav>
+</header>
+
+<main>
+    <section class="hero">
+        <h1 id="account-title">Créer un compte</h1>
+    </section>
+
+    <div class="modal-content" style="margin: 0 auto;">
+        <form id="account-form">
+            <label for="account-first-name">Prénom :</label>
+            <input type="text" id="account-first-name" required>
+
+            <label for="account-last-name">Nom :</label>
+            <input type="text" id="account-last-name" required>
+
+            <label for="account-email">Email :</label>
+            <input type="email" id="account-email" required>
+
+            <label for="account-phone">Téléphone :</label>
+            <input type="tel" id="account-phone">
+
+            <div id="password-block">
+                <label for="account-password">Mot de passe (8 caractères minimum) :</label>
+                <input type="password" id="account-password" minlength="8">
+            </div>
+
+            <div id="profile-block" style="display: none;">
+                <label for="account-main-stack">Stack principale :</label>
+                <input type="text" id="account-main-stack" placeholder="ex : Node.js, PostgreSQL">
+
+                <label for="account-secondary-stack">Stack secondaire :</label>
+                <input type="text" id="account-secondary-stack" placeholder="ex : Docker, Git">
+
+                <label for="account-work-mode">Mode de travail :</label>
+                <select id="account-work-mode">
+                    <option value="">Non précisé</option>
+                    <option value="Présentiel">Présentiel</option>
+                    <option value="Télétravail">Télétravail</option>
+                    <option value="Hybride">Hybride</option>
+                </select>
+            </div>
+
+            <p id="account-error" style="color: #dc2626;"></p>
+            <p id="account-success" style="color: #16a34a;"></p>
+
+            <button type="submit" class="btn-apply" id="account-submit">Créer mon compte</button>
+        </form>
+        <p id="login-hint">Déjà un compte ? <a href="login.html">Se connecter</a></p>
+    </div>
+</main>
+
+<footer>
+    <p>&copy; 2026 K-YOU — Job Board Tech.</p>
+</footer>
+
+<script src="js/api.js"></script>
+<script src="js/account.js"></script>
+</body>
+</html>
