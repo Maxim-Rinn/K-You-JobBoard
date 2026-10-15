@@ -1,11 +1,11 @@
 // =====================================================================
-//  routes/ads.js : les routes des annonces (préfixe /api/ads)
+//  routes/ads.js : les routes des annonces (préfixe /ads)
 // ---------------------------------------------------------------------
 //  Ce fichier est une "boutique" du centre commercial : server.js
-//  envoie ici toutes les demandes qui commencent par /api/ads.
+//  envoie ici toutes les demandes qui commencent par /ads.
 //  Ici, on écrit donc les adresses SANS le préfixe :
-//    router.get('/')     répondra à  GET /api/ads
-//    router.get('/:id')  répondra à  GET /api/ads/12
+//    router.get('/')     répondra à  GET /ads
+//    router.get('/:id')  répondra à  GET /ads/12
 //
 //  Qui code quoi dans ce fichier :
 //    - Max   : GET /, GET /:id, POST /:id/applications (routes publiques)
@@ -17,7 +17,7 @@
 const express = require('express');
 
 // Un Router est un "mini-standard téléphonique" : il regroupe les
-// routes d'une seule ressource. server.js le branchera sur /api/ads.
+// routes d'une seule ressource. server.js le branchera sur /ads.
 const router = express.Router();
 
 
@@ -35,7 +35,7 @@ const requireAdmin = require('../middlewares/admin');
 const optionalAuth = require('../middlewares/optionalAuth');
 const bcrypt = require('bcrypt');
 
-// GET /api/ads?page=1&limit=10 : les annonces actives, page par page
+// GET /ads?page=1&limit=10 : les annonces actives, page par page
 router.get('/', async (req, res) => {
   // 1. Lire page et limit dans l'URL. Valeurs par défaut : page 1, 10 par page.
   //    On empêche les valeurs absurdes : page au moins 1, limit entre 1 et 50.
@@ -73,9 +73,9 @@ router.get('/', async (req, res) => {
   });
 });
 
-// GET /api/ads/:id : le détail complet d'une annonce (page "Learn more")
+// GET /ads/:id : le détail complet d'une annonce (page "Learn more")
 //   200 : l'annonce (un objet) avec son entreprise et sa catégorie
-//   400 : id qui n'est pas un entier positif (ex : /api/ads/abc, /api/ads/0)
+//   400 : id qui n'est pas un entier positif (ex : /ads/abc, /ads/0)
 //   404 : annonce inexistante ou désactivée
 router.get('/:id', async (req, res) => {
   // 1. Le :id de l'URL est rangé dans req.params, toujours sous forme de texte :
@@ -115,7 +115,7 @@ router.get('/:id', async (req, res) => {
 });
 
 
-// POST /api/ads/:id/applications : postuler à une annonce (issue #5)
+// POST /ads/:id/applications : postuler à une annonce (issue #5)
 //   Connecté (jeton)  : seul { message } est demandé, on utilise son compte.
 //   Visiteur          : { first_name, last_name, email, password, phone?, message }
 //                       -> on crée son compte PUIS sa candidature (décision d'équipe :
@@ -169,7 +169,7 @@ router.post('/:id/applications', optionalAuth, async (req, res) => {
     }
   }
 
-  // ---- Cas 2 : VISITEUR. Mêmes règles que POST /api/auth/register ----
+  // ---- Cas 2 : VISITEUR. Mêmes règles que POST /auth/register ----
   const { first_name, last_name, email, password, phone } = body;
 
   // 5. Champs obligatoires du compte (email et password doivent être du texte,
@@ -233,7 +233,7 @@ router.post('/:id/applications', optionalAuth, async (req, res) => {
 
 
 // ----- Routes admin (Robin) -----
-// POST /api/ads - Créer une nouvelle annonce (Admin)
+// POST /ads - Créer une nouvelle annonce (Admin)
 router.post('/', requireAuth, requireAdmin, async (req, res, next) => {
     try {
         const {
@@ -304,7 +304,7 @@ router.post('/', requireAuth, requireAdmin, async (req, res, next) => {
     }
 });
 
-// PUT /api/ads/:id - Mettre à jour une annonce (Admin)
+// PUT /ads/:id - Mettre à jour une annonce (Admin)
 router.put('/:id', requireAuth, requireAdmin, async (req, res, next) => {
     try {
         const id = parseInt(req.params.id);
@@ -393,7 +393,7 @@ router.put('/:id', requireAuth, requireAdmin, async (req, res, next) => {
     }
 });
 
-// DELETE /api/ads/:id - Supprimer une annonce (Admin)
+// DELETE /ads/:id - Supprimer une annonce (Admin)
 router.delete('/:id', requireAuth, requireAdmin, async (req, res, next) => {
     try {
         const id = parseInt(req.params.id);

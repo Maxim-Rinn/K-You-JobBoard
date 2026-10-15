@@ -47,7 +47,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // ---------------------------------------------------------------------
 // 4. Écrire le menu : une première route de test
 // ---------------------------------------------------------------------
-app.get('/api/health', async (req, res) => {
+app.get('/health', async (req, res) => {
   const result = await pool.query('SELECT NOW()');
   res.json({ status: 'ok', db: 'ok', time: result.rows[0].now });
 });
@@ -57,12 +57,12 @@ app.get('/api/health', async (req, res) => {
 // ---------------------------------------------------------------------
 // 4 bis. Brancher les "boutiques" : les fichiers du dossier routes
 // ---------------------------------------------------------------------
-app.use('/api/ads', require('./routes/ads'));
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/companies', require('./routes/companies'));
-app.use('/api/categories', require('./routes/categories'));
-app.use('/api/people', require('./routes/people'));
-app.use('/api/applications', require('./routes/applications'));
+app.use('/ads', require('./routes/ads'));
+app.use('/auth', require('./routes/auth'));
+app.use('/companies', require('./routes/companies'));
+app.use('/categories', require('./routes/categories'));
+app.use('/people', require('./routes/people'));
+app.use('/applications', require('./routes/applications'));
 
 
 // ---------------------------------------------------------------------
@@ -71,8 +71,8 @@ app.use('/api/applications', require('./routes/applications'));
 // Importer les deux filets depuis middlewares/errors.js
 const { notFound, errorHandler } = require('./middlewares/errors');
 
-// Filet n°1 : seulement pour les adresses qui commencent par /api
-app.use('/api', notFound);
+// Filet n°1 : toute adresse qu'aucune route au-dessus n'a reconnue -> 404 en JSON
+app.use(notFound);
 
 // Filet n°2 : TOUJOURS en tout dernier
 app.use(errorHandler);
