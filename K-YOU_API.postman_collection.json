@@ -1,0 +1,302 @@
+{
+	"info": {
+		"_postman_id": "kyou-api-collection",
+		"name": "K-YOU API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Configurer la variable",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"email\": \"admin@kyou.com\",\n  \"password\": \"password123\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/auth/login",
+					"host": ["{{baseUrl}}"],
+					"path": ["auth", "login"]
+				}
+			}
+		},
+		{
+			"name": "1. Publiques",
+			"item": [
+				{
+					"name": "login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "register",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"newuser@example.com\",\n  \"password\": \"password123\",\n  \"name\": \"John Doe\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["auth", "register"]
+						}
+					}
+				},
+				{
+					"name": "lister des annonces",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/annonces",
+							"host": ["{{baseUrl}}"],
+							"path": ["annonces"]
+						}
+					}
+				},
+				{
+					"name": "détails d'une annonce",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/annonces/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["annonces", "1"]
+						}
+					}
+				},
+				{
+					"name": "lister les catégories",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/categories",
+							"host": ["{{baseUrl}}"],
+							"path": ["categories"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "2. Compte",
+			"item": [
+				{
+					"name": "Mon profil",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/auth/me",
+							"host": ["{{baseUrl}}"],
+							"path": ["auth", "me"]
+						}
+					}
+				},
+				{
+					"name": "Mes candidatures",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/auth/me/applications",
+							"host": ["{{baseUrl}}"],
+							"path": ["auth", "me", "applications"]
+						}
+					}
+				},
+				{
+					"name": "Postuler à une annonce",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"annonceId\": 1,\n  \"message\": \"Bonjour, je souhaite postuler...\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/applications",
+							"host": ["{{baseUrl}}"],
+							"path": ["applications"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "3. Admin",
+			"item": [
+				{
+					"name": "Lister les entreprises (paginé)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/admin/companies?page=1&limit=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "companies"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Détail d'une entreprise",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/admin/companies/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "companies", "1"]
+						}
+					}
+				},
+				{
+					"name": "Créer une entreprise",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Nouvelle Entreprise\",\n  \"siret\": \"12345678900012\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/companies",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "companies"]
+						}
+					}
+				},
+				{
+					"name": "Modifier une entreprise",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Entreprise Modifiée\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/companies/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "companies", "1"]
+						}
+					}
+				},
+				{
+					"name": "Supprimer une entreprise",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/admin/companies/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "companies", "1"]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
