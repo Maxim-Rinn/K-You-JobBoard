@@ -1,11 +1,11 @@
 // =====================================================================
-//  routes/ads.js : les routes des annonces (préfixe /api/ads)
+//  routes/ads.js : les routes des annonces (préfixe /ads)
 // ---------------------------------------------------------------------
 //  Ce fichier est une "boutique" du centre commercial : server.js
-//  envoie ici toutes les demandes qui commencent par /api/ads.
+//  envoie ici toutes les demandes qui commencent par /ads.
 //  Ici, on écrit donc les adresses SANS le préfixe :
-//    router.get('/')     répondra à  GET /api/ads
-//    router.get('/:id')  répondra à  GET /api/ads/12
+//    router.get('/')     répondra à  GET /ads
+//    router.get('/:id')  répondra à  GET /ads/12
 //
 //  Qui code quoi dans ce fichier :
 //    - Max   : GET /, GET /:id, POST /:id/applications (routes publiques)
@@ -17,7 +17,7 @@
 const express = require('express');
 
 // Un Router est un "mini-standard téléphonique" : il regroupe les
-// routes d'une seule ressource. server.js le branchera sur /api/ads.
+// routes d'une seule ressource. server.js le branchera sur /ads.
 const router = express.Router();
 
 
@@ -35,7 +35,7 @@ const requireAdmin = require('../middlewares/admin');
 const optionalAuth = require('../middlewares/optionalAuth');
 const bcrypt = require('bcrypt');
 
-// GET /api/ads?page=1&limit=10 : les annonces actives, page par page
+// GET /ads?page=1&limit=10 : les annonces actives, page par page
 router.get('/', async (req, res) => {
   // 1. Lire page et limit dans l'URL. Valeurs par défaut : page 1, 10 par page.
   //    On empêche les valeurs absurdes : page au moins 1, limit entre 1 et 50.
@@ -61,21 +61,25 @@ router.get('/', async (req, res) => {
 
   // 4. Le nombre total d'annonces actives (pour calculer le nombre de pages)
   const count = await pool.query('SELECT COUNT(*) FROM ads WHERE is_active = TRUE');
-  const total = Number(count.rows[0].count);
+  const totalItems = Number(count.rows[0].count);
 
-  // 5. La réponse : les annonces + les infos de pagination
+  // 5. La réponse : les annonces + les infos de pagination.
+  //    Même format que les listes de Robin (companies, categories…) :
+  //    { data: [...], pagination: { page, limit, totalItems, totalPages } }
   res.json({
     data: result.rows,
-    page,
-    limit,
-    total,
-    totalPages: Math.ceil(total / limit),
+    pagination: {
+      page,
+      limit,
+      totalItems,
+      totalPages: Math.ceil(totalItems / limit),
+    },
   });
 });
 
-// GET /api/ads/:id : le détail complet d'une annonce (page "Learn more")
+// GET /ads/:id : le détail complet d'une annonce (page "Learn more")
 //   200 : l'annonce (un objet) avec son entreprise et sa catégorie
-//   400 : id qui n'est pas un entier positif (ex : /api/ads/abc, /api/ads/0)
+//   400 : id qui n'est pas un entier positif (ex : /ads/abc, /ads/0)
 //   404 : annonce inexistante ou désactivée
 router.get('/:id', async (req, res) => {
   // 1. Le :id de l'URL est rangé dans req.params, toujours sous forme de texte :
@@ -109,13 +113,13 @@ router.get('/:id', async (req, res) => {
     return res.status(404).json({ error: 'Annonce introuvable' });
   }
 
-  // 5. Un id est unique, donc une seule ligne : on renvoie rows[0] (un objet)
-  //    plutôt que le tableau, plus simple à utiliser pour le front
-  res.json(result.rows[0]);
+  // 5. Un id est unique, donc une seule ligne : on renvoie rows[0] (un objet,
+  //    pas le tableau), rangé dans "data" comme dans toutes les routes de l'API
+  res.json({ data: result.rows[0] });
 });
 
 
-// POST /api/ads/:id/applications : postuler à une annonce (issue #5)
+// POST /ads/:id/applications : postuler à une annonce (issue #5)
 //   Connecté (jeton)  : seul { message } est demandé, on utilise son compte.
 //   Visiteur          : { first_name, last_name, email, password, phone?, message }
 //                       -> on crée son compte PUIS sa candidature (décision d'équipe :
@@ -157,7 +161,7 @@ router.post('/:id/applications', optionalAuth, async (req, res) => {
         VALUES ($1, $2, $3)
         RETURNING *
       `, [adId, req.user.id, message.trim()]);
-      return res.status(201).json(result.rows[0]);
+      return res.status(201).json({ data: result.rows[0] });
     } catch (error) {
       // 23505 = violation d'une contrainte UNIQUE : ici UNIQUE(ad_id, person_id).
       // On laisse la base refuser le doublon plutôt que de faire un SELECT avant :
@@ -169,7 +173,7 @@ router.post('/:id/applications', optionalAuth, async (req, res) => {
     }
   }
 
-  // ---- Cas 2 : VISITEUR. Mêmes règles que POST /api/auth/register ----
+  // ---- Cas 2 : VISITEUR. Mêmes règles que POST /auth/register ----
   const { first_name, last_name, email, password, phone } = body;
 
   // 5. Champs obligatoires du compte (email et password doivent être du texte,
@@ -215,7 +219,7 @@ router.post('/:id/applications', optionalAuth, async (req, res) => {
     `, [adId, person.rows[0].id, message.trim()]);
 
     await client.query('COMMIT'); // tout a marché : on rend les deux INSERT définitifs
-    res.status(201).json(application.rows[0]);
+    res.status(201).json({ data: application.rows[0] });
   } catch (error) {
     await client.query('ROLLBACK'); // un problème : on annule TOUT, la base est intacte
     // 23505 ici = l'email a été pris entre notre SELECT et notre INSERT
@@ -233,7 +237,7 @@ router.post('/:id/applications', optionalAuth, async (req, res) => {
 
 
 // ----- Routes admin (Robin) -----
-// POST /api/ads - Créer une nouvelle annonce (Admin)
+// POST /ads - Créer une nouvelle annonce (Admin)
 router.post('/', requireAuth, requireAdmin, async (req, res, next) => {
     try {
         const {
@@ -304,7 +308,7 @@ router.post('/', requireAuth, requireAdmin, async (req, res, next) => {
     }
 });
 
-// PUT /api/ads/:id - Mettre à jour une annonce (Admin)
+// PUT /ads/:id - Mettre à jour une annonce (Admin)
 router.put('/:id', requireAuth, requireAdmin, async (req, res, next) => {
     try {
         const id = parseInt(req.params.id);
@@ -393,7 +397,7 @@ router.put('/:id', requireAuth, requireAdmin, async (req, res, next) => {
     }
 });
 
-// DELETE /api/ads/:id - Supprimer une annonce (Admin)
+// DELETE /ads/:id - Supprimer une annonce (Admin)
 router.delete('/:id', requireAuth, requireAdmin, async (req, res, next) => {
     try {
         const id = parseInt(req.params.id);

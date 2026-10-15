@@ -1,9 +1,9 @@
 // =====================================================================
-//  routes/applications.js : les candidatures (préfixe /api/applications)
+//  routes/applications.js : les candidatures (préfixe /applications)
 // ---------------------------------------------------------------------
 //  CRUD admin (Robin), même modèle que routes/companies.js.
 //  Attention : ENVOYER une candidature n'est pas ici. C'est la route
-//  publique POST /api/ads/:id/applications, dans routes/ads.js (Max).
+//  publique POST /ads/:id/applications, dans routes/ads.js (Max).
 // =====================================================================
 
 // Même squelette que les autres fichiers de routes : voir routes/ads.js
@@ -16,7 +16,7 @@ const db = require('../db');
 const requireAuth = require('../middlewares/auth');
 const requireAdmin = require('../middlewares/admin');
 
-// POST /api/applications - Créer une nouvelle candidature
+// POST /applications - Créer une nouvelle candidature
 router.post('/', requireAuth, requireAdmin, async (req, res, next) => {
     try {
         const { ad_id, person_id, message, status } = req.body;
@@ -53,7 +53,7 @@ router.post('/', requireAuth, requireAdmin, async (req, res, next) => {
     }
 });
 
-//GET /api/applications - Liste paginée + métadonnées
+//GET /applications - Liste paginée + métadonnées
 router.get('/', requireAuth, requireAdmin, async (req, res, next) => {
     try {
         const page  = Math.max(parseInt(req.query.page) || 1, 1);
@@ -83,7 +83,7 @@ router.get('/', requireAuth, requireAdmin, async (req, res, next) => {
     }
 });
 
-//GET /api/applications/:id - Récupérer une application spécifique
+//GET /applications/:id - Récupérer une application spécifique
 router.get('/:id', requireAuth, requireAdmin, async (req, res, next) => {
     try {
         const id = parseInt(req.params.id);
@@ -105,7 +105,7 @@ router.get('/:id', requireAuth, requireAdmin, async (req, res, next) => {
     }
 });
 
-//PUT /api/applications/:id - Mettre à jour une candidature
+//PUT /applications/:id - Mettre à jour une candidature
 router.put('/:id', requireAuth, requireAdmin, async (req, res, next) => {
     try {
         const id = parseInt(req.params.id);
@@ -145,7 +145,7 @@ router.put('/:id', requireAuth, requireAdmin, async (req, res, next) => {
     }
 });
 
-// DELETE /api/applications/:id - Supprimer une candidature
+// DELETE /applications/:id - Supprimer une candidature
 router.delete('/:id', requireAuth, requireAdmin, async (req, res, next) => {
     try {
         const id = parseInt(req.params.id);

@@ -1,11 +1,11 @@
 // =====================================================================
-//  routes/auth.js : inscription et connexion (préfixe /api/auth)
+//  routes/auth.js : inscription et connexion (préfixe /auth)
 // ---------------------------------------------------------------------
-//  server.js envoie ici les demandes qui commencent par /api/auth.
+//  server.js envoie ici les demandes qui commencent par /auth.
 //  Routes prévues (Max) :
-//    POST /register  ->  POST /api/auth/register  (créer un compte)
-//    POST /login     ->  POST /api/auth/login     (se connecter)
-//    GET  /me        ->  GET  /api/auth/me        (qui suis-je ?)
+//    POST /register  ->  POST /auth/register  (créer un compte)
+//    POST /login     ->  POST /auth/login     (se connecter)
+//    GET  /me        ->  GET  /auth/me        (qui suis-je ?)
 // =====================================================================
 
 // Même squelette que les autres fichiers de routes : voir routes/ads.js
@@ -19,15 +19,20 @@ const pool = require('../db');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
+// Le contrôle « est connecté » de l'issue #7, pour GET /me
+// (on remonte d'un dossier : routes/ -> racine, puis on entre dans middlewares/)
+const requireAuth = require('../middlewares/auth');
 
-// POST /api/auth/register : créer un compte
+
+// POST /auth/register : créer un compte
 //   201 : compte créé (sans le password_hash dans la réponse)
 //   400 : champ manquant ou mot de passe trop court
 //   409 : email déjà utilisé
 router.post('/register', async (req, res) => {
   // 1. Les champs du formulaire arrivent dans le corps de la requête POST
-  //    (req.body, rempli par express.json() dans server.js)
-  const { first_name, last_name, email, password, phone } = req.body;
+  //    (req.body, rempli par express.json() dans server.js).
+  //    Sans corps JSON, req.body est undefined : "|| {}" évite un plantage (500)
+  const { first_name, last_name, email, password, phone } = req.body || {};
 
   // 2. Champs obligatoires : s'il en manque un, 400 et on s'arrête.
   //    email et password doivent être du texte : sinon .trim() ou .length
@@ -59,24 +64,35 @@ router.post('/register', async (req, res) => {
   //    par le client est ignoré, sinon n'importe qui pourrait devenir admin.
   //    On stocke cleanEmail (normalisé) et hash (jamais le mot de passe en clair).
   //    RETURNING renvoie la ligne créée, SANS le password_hash
-  const result = await pool.query(`
-    INSERT INTO people (first_name, last_name, email, phone, password_hash, role)
-    VALUES ($1, $2, $3, $4, $5, 'user')
-    RETURNING id, first_name, last_name, email, phone, role
-  `, [first_name, last_name, cleanEmail, phone, hash]);
+  try {
+    const result = await pool.query(`
+      INSERT INTO people (first_name, last_name, email, phone, password_hash, role)
+      VALUES ($1, $2, $3, $4, $5, 'user')
+      RETURNING id, first_name, last_name, email, phone, role
+    `, [first_name, last_name, cleanEmail, phone, hash]);
 
-  // 8. 201 = "créé" ; on renvoie la personne (un objet, pas un tableau)
-  res.status(201).json(result.rows[0]);
+    // 8. 201 = "créé" ; on renvoie la personne (un objet, pas un tableau),
+    //    rangée dans "data" comme dans toutes les routes de l'API
+    res.status(201).json({ data: result.rows[0] });
+  } catch (error) {
+    // 23505 = l'email a été pris entre notre SELECT et notre INSERT
+    // (deux inscriptions simultanées) : même réponse qu'à l'étape 5
+    if (error.code === '23505') {
+      return res.status(409).json({ error: 'Cet email est déjà utilisé' });
+    }
+    throw error; // autre erreur : le filet 500 de server.js s'en charge
+  }
 });
 
 
-// POST /api/auth/login : se connecter
+// POST /auth/login : se connecter
 //   200 : { token, user } — le jeton à renvoyer ensuite dans chaque requête
 //   400 : email ou mot de passe manquant
 //   401 : email inconnu OU mauvais mot de passe (même message dans les deux cas)
 router.post('/login', async (req, res) => {
   // 1. Récupérer l'email et le mot de passe envoyés par le formulaire
-  const { email, password } = req.body;
+  //    ("|| {}" : sans corps JSON, req.body est undefined, voir /register)
+  const { email, password } = req.body || {};
 
   // 2. Les deux doivent être du texte, sinon 400
   if (typeof email !== 'string' || typeof password !== 'string') {
@@ -122,6 +138,33 @@ router.post('/login', async (req, res) => {
       role: user.role,
     },
   });
+});
+
+
+// GET /auth/me : qui suis-je ? (sert à préremplir le formulaire Apply)
+//   200 : la personne connectée (SANS le password_hash)
+//   401 : pas de jeton, ou jeton faux / expiré (répondu par requireAuth)
+//   404 : le compte n'existe plus
+router.get('/me', requireAuth, async (req, res) => {
+  // 1. Chercher la personne grâce à l'id rangé dans le jeton par requireAuth.
+  //    Colonnes listées une par une (pas de SELECT *) : le password_hash
+  //    ne doit JAMAIS partir vers le navigateur.
+  //    L'id vient de req.user (donc du jeton signé), jamais de l'URL ni du corps.
+  const result = await pool.query(`
+    SELECT id, first_name, last_name, email, phone, role,
+           main_stack, secondary_stack, work_mode
+    FROM people
+    WHERE id = $1
+  `, [req.user.id]);
+
+  // 2. Aucune ligne : le jeton est valide (2 h), mais le compte a été
+  //    supprimé entre-temps (ex : par un admin) -> 404
+  if (result.rows.length === 0) {
+    return res.status(404).json({ error: 'Compte introuvable' });
+  }
+
+  // 3. Un seul compte par id : on renvoie l'objet (pas le tableau), dans "data"
+  res.json({ data: result.rows[0] });
 });
 
 

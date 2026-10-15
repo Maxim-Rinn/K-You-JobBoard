@@ -1,0 +1,400 @@
+/* ==========================================
+   VARIABLES & CONFIGURATION RÉTRO-TECH
+   ========================================== */
+:root {
+    --stripe-1: #443199;
+    --stripe-2: #792CA2;
+    --stripe-3: #C13383;
+    --stripe-4: #E05454;
+    
+    --bg-faded: #f0ecde; /* Fond blanc délavé / crème */
+    --card-bg: #ffffff;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --border-color: #cbd5e1;
+    
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    
+    --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'JetBrains Mono';
+    font-weight: 400;
+    color: var(--text-main);
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    /* Ajoute un motif de grille en overlay */
+    background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 20px 20px;
+    background-color: var(--bg-faded);
+}
+
+@keyframes stripeSlideDown {
+    from { clip-path: inset(0 0 100% 0); }
+    to   { clip-path: inset(0 0 0 0); }
+}
+/* Le bandeau rétro vertical (Stripe) : de haut en bas, s'arrête avant le footer, décalé à droite */
+body::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 20%;    /* Légèrement décalé vers la droite */
+    width: 12rem;  /* Largeur du bandeau */
+    background: linear-gradient(
+        to right,
+        var(--stripe-1) 0%,   var(--stripe-1) 25%,
+        var(--stripe-2) 25%,  var(--stripe-2) 50%,
+        var(--stripe-3) 50%,  var(--stripe-3) 75%,
+        var(--stripe-4) 75%,  var(--stripe-4) 100%
+    );
+    opacity: 0.7; 
+    z-index: 0;
+    pointer-events: none;
+    animation: stripeSlideDown 0.5s ease-in both;
+}
+
+/* ==========================================
+   EFFET GRANULEUX (Noise / Grain Rétro)
+   ========================================== */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 999;
+    opacity: 0.06;
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* S'assure que le contenu et le header restent bien au-dessus du bandeau */
+header, main, footer {
+    position: relative;
+    z-index: 1;
+}
+
+/* ==========================================
+   TYPOGRAPHIE (Titres en Orbitron 900)
+   ========================================== */
+h1, h2, h3, h4, .logo {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+}
+
+/* ==========================================
+   HEADER & NAVIGATION
+   ========================================== */
+header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+nav {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1.25rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-size: 1.75rem;
+    color: var(--text-main);
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+#nav-links {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+#nav-links a {
+    text-decoration: none;
+    color: white;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: opacity 0.2s;
+}
+
+#nav-links a:hover {
+    opacity: 0.7;
+}
+
+#link-logout {
+    background: var(--text-main);
+    color: white;
+    border: none;
+    padding: 0.8rem 1rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 600;
+}
+
+#link-login {
+    background: var(--text-main);
+    color: white;
+    border: none;
+    padding: 0.8rem 1rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 600;
+}
+
+/* ==========================================
+   ANIMATION ROLLING TEXT
+   ========================================== */
+/* Le bouton sert de cadre masquant */
+.btn-details, .btn-apply, #btn-submit-apply, #link-logout, #link-login, #link-account, #link-admin, .logo, #btn-open-create-modal, #btn-prev, #btn-next, #btn-submit-admin {
+    position: relative;
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+/* Le conteneur du roll a une hauteur fixe d'une ligne (1.2em) */
+.roll {
+    display: flex;
+    flex-direction: column;
+    height: 1.2em;
+    line-height: 1.2em;
+    transition: transform 0.4s cubic-bezier(0.76, 0, 0.24, 1);
+    will-change: transform;
+}
+
+/* Chaque ligne de texte prend exactement 1.2em */
+.roll span {
+    display: block;
+    height: 1.2em;
+    line-height: 1.2em;
+    white-space: nowrap;
+    text-align: center;
+}
+
+/* Le MASQUE : Il coupe strictement tout ce qui dépasse d'une ligne */
+.roll-mask {
+    display: inline-block;
+    height: 1.2em;
+    line-height: 1.2em;
+    overflow: hidden; /* Masque parfait autour du texte */
+    position: relative;
+}
+
+/* Au survol : monte exactement d'une ligne entière (-100%) */
+.btn-details:hover .roll, 
+.btn-apply:hover .roll, 
+#btn-submit-apply:hover .roll, 
+#link-logout:hover .roll, 
+#link-login:hover .roll, 
+#link-account:hover .roll, 
+#link-admin:hover .roll, 
+.logo:hover .roll,
+#btn-open-create-modal:hover .roll,
+#btn-prev:hover .roll, 
+#btn-next:hover .roll,
+#btn-submit-admin:hover .roll {
+    transform: translateY(-100%);
+}
+
+/* ==========================================
+   CONTENU PRINCIPAL
+   ========================================== */
+main {
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 2.5rem 2rem;
+    flex: 1;
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 1rem;
+}
+
+.modal-content {
+    background: var(--card-bg);
+    border: 2px solid var(--text-main);
+    padding: 2.5rem;
+    border-radius: var(--radius-lg);
+    width: 100%;
+    max-width: 600px;
+    position: relative;
+    box-shadow: var(--shadow-md);
+}
+
+.modal-content input, 
+.modal-content textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    margin-bottom: 1.25rem;
+    font-family: inherit;
+    font-size: 0.95rem;
+    outline: none;
+}
+
+.close-btn {
+    position: absolute;
+    top: 1.25rem;
+    right: 1.5rem;
+    font-size: 1.75rem;
+    cursor: pointer;
+    color: var(--text-main);
+}
+
+footer {
+    background-color: #ffffff;
+    color: var(--text-main);
+    text-align: center;
+    padding: 2.5rem 0;
+    font-size: 0.875rem;
+    width: 100%;
+}
+
+/* ADMIN */
+
+.admin-header-section {
+    padding: 2rem 5%; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    flex-wrap: wrap; 
+    gap: 1rem;
+}
+
+.admin-controls {
+    display: flex; 
+    gap: 1rem; 
+    align-items: center;
+}
+
+.table-select {
+    padding: 0.5rem; 
+    font-family: inherit;
+}
+
+#page-info {
+    display: inline-flex;
+    align-items: center;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text-main);
+}
+
+/* Boutons */
+#btn-open-create-modal, #btn-prev, #btn-next, #btn-submit-admin {
+    background: var(--text-main);
+    color: white;
+    border: none;
+    padding: 0.8rem 1rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 600;
+}
+
+/* La selection */
+#table-select {
+    padding: 0.6rem 1rem;
+    border: 2px solid var(--text-main);
+    border-radius: var(--radius-md);
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 600;
+    outline: none;
+    background: var(--card-bg);
+    color: var(--text-main);
+    cursor: pointer;
+    box-shadow: var(--shadow-md);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+#table-select:focus {
+    border-color: var(--text-main);
+}
+
+/* Le tableau */
+
+#admin-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: var(--card-bg);
+    border: 2px solid var(--text-main);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    margin-top: 1rem;
+}
+
+#admin-table th {
+    background: var(--text-main);
+    color: white;
+    padding: 1rem;
+    text-align: left;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+#admin-table td {
+    padding: 0.875rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.9rem;
+}
+
+#admin-table tr:last-child td {
+    border-bottom: none;
+}
+
+#admin-table tr:hover td {
+    background-color: #f8fafc;
+}
+
+.admin-table-container {
+    padding: 0 5%; 
+    overflow-x: auto;
+}
+
+.pagination {
+    display: flex; 
+    justify-content: center; 
+    gap: 1rem; 
+    margin-bottom: 3rem;
+}
