@@ -1,9 +1,9 @@
 
 // board.js : affiche les annonces du job board sous forme de cartes.
 // Chaque carte a un bouton « Voir plus » (affiche le détail) et un bouton « Postuler » (affiche un formulaire).
-// Les annonces sont FICTIVES. À remplacer par un fetch() sur GET /api/ads quand l'API sera branchée (issue #18).
+// Les annonces sont FICTIVES. À remplacer par un fetch() sur GET /ads quand l'API sera branchée (issue #18).
 
-// Données fictives : mêmes noms de champs que l'API. full_description vient de GET /api/ads/:id.
+// Données fictives : mêmes noms de champs que l'API. full_description vient de GET /ads/:id.
 
 const annonces = [
     {
@@ -43,7 +43,7 @@ const annonces = [
     
 ];
 
-// Champs du formulaire « Postuler ». `name` = clé envoyée à l'API (noms à confirmer avec Max, route POST /api/ads/:id/applications).
+// Champs du formulaire « Postuler ». `name` = clé envoyée à l'API (noms à confirmer avec Max, route POST /ads/:id/applications).
 const champs = [
     { name: "nom", type: "text", placeholder: "Nom" },
     { name: "prenom", type: "text", placeholder: "Prénom" },

@@ -7,7 +7,7 @@
 //    - jeton valide                  ->  req.user = { id, role }, next()
 //    - jeton présent mais faux/expiré ->  401 : on ne le traite PAS en visiteur,
 //      sinon un utilisateur dont le jeton a expiré se créerait un 2e compte
-//  Utilisé par POST /api/ads/:id/applications, ouvert aux deux publics.
+//  Utilisé par POST /ads/:id/applications, ouvert aux deux publics.
 // =====================================================================
 
 const jwt = require('jsonwebtoken');
