@@ -35,6 +35,7 @@ for (const annonce of annonces) {
     
     const submit = document.createElement("button");
     const message = document.createElement("p");
+    const infos = document.createElement("p");
     
 
     //2. "Remplir l'assiette" 
@@ -103,9 +104,32 @@ for (const annonce of annonces) {
 
     
     // faire réagir le bouton POSTULER
-    apply.addEventListener("click", function(){
+        // Au clic sur « Postuler » : on affiche le formulaire. Si l'utilisateur est connecté, on demande son profil à l'API pour l'afficher.
+    apply.addEventListener("click", async function(){
+        const token = localStorage.getItem("token");
+
+        // Connecté : GET /auth/me avec le badge (token) renvoie le profil dans la clé "data".
+        if (token) {
+            const reponse = await fetch("/auth/me", {
+                headers: { Authorization: "Bearer " + token }
+            });
+
+            if (reponse.ok) {
+                const resultat = await reponse.json();
+                const profil = resultat.data;
+                infos.textContent = `Connecté en tant que ${profil.first_name} ${profil.last_name} (${profil.email})`;
+            } else {
+                // 401 : le token a expiré (il dure 2 h) : on propose de se reconnecter.
+                infos.textContent = "Ta session a expiré : reconnecte-toi pour postuler avec ton compte.";
+            }
+
+            // prepend = ranger au DÉBUT du formulaire (append range à la fin).
+            formulaire.prepend(infos);
+        }
+
         carte.append(formulaire);
     })
+
 
     // Envoi du formulaire : preventDefault() empêche le rechargement de la page, puis on envoie les données à l'API.
     formulaire.addEventListener("submit", async function(event){
