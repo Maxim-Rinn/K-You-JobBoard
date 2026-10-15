@@ -342,6 +342,37 @@ main {
     opacity: 0.9;
 }
 
+/* Formulaire « Postuler » dans une carte : champs empilés, espacés */
+.ad-card form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.ad-card input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 0.95rem;
+}
+
+/* Bouton « Envoyer » du formulaire, même style que « Postuler » */
+.ad-card form button {
+    align-self: flex-start;
+    padding: 0.8rem 1.25rem;
+    border: 2px solid var(--text-main);
+    border-radius: var(--radius-sm);
+    background: var(--stripe-2);
+    color: white;
+    font-family: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+
 .modal {
     position: fixed;
     top: 0;
