@@ -21,7 +21,7 @@ async function loadTableData(tableName, page = 1) {
     const token = localStorage.getItem("token");
 
     try {
-        const response = await fetch(`http://localhost:3000/api/admin/${tableName}?page=${page}&limit=${limit}`, {
+        const response = await fetch(`/${tableName}?page=${page}&limit=${limit}`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -53,7 +53,7 @@ function renderTable(data) {
     tableBody.innerHTML = "";
 
     // On s'assure d'avoir un tableau d'éléments (soit data direct, soit data.items/data.rows selon la pagination de l'API)
-    const items = Array.isArray(data) ? data : (data.items || data.rows || []);
+    const items = Array.isArray(data) ? data : (data.items || data.data || []);
 
     //Vérifie si les données sont présentes 
     if (items.length === 0) {
@@ -140,7 +140,7 @@ async function deleteItem(id) {
 
     const token = localStorage.getItem("token");
     try {
-        const response = await fetch(`http://localhost:3000/api/admin/${currentTable}/${id}`, {
+        const response = await fetch(`/${currentTable}/${id}`, {
             method: "DELETE",
             headers: {
                 "Authorization": `Bearer ${token}`
