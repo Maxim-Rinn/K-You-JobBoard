@@ -69,8 +69,9 @@ router.put('/:id', requireAuth, async (req, res) => {
       return res.status(404).json({ error: 'Compte introuvable' });
     }
 
-    // 8. On renvoie la personne modifiée (un objet, pas un tableau)
-    res.json(result.rows[0]);
+    // 8. On renvoie la personne modifiée (un objet, pas un tableau), dans "data"
+    //    comme le GET /people/:id de Robin juste en dessous
+    res.json({ data: result.rows[0] });
   } catch (error) {
     // 23505 = UNIQUE(email) : l'email appartient déjà à un autre compte
     if (error.code === '23505') {
