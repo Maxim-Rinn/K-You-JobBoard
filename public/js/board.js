@@ -85,7 +85,7 @@ for (const annonce of annonces) {
     // Au clic sur « Voir plus » : on demande le détail complet de CETTE annonce à l'API, puis on l'affiche.
     learnMore.addEventListener("click", async function(){
         // `${annonce.id}` insère l'id de l'annonce dans l'adresse : /api/ads/1, /api/ads/2...
-        const reponse = await fetch(`/api/ads/${annonce.id}`);
+                const reponse = await fetch(`/ads/${annonce.id}`);
 
         // 404 (annonce introuvable) ou autre erreur : on affiche un message dans le détail.
         if (!reponse.ok) {
@@ -96,7 +96,8 @@ for (const annonce of annonces) {
 
         // On lit la réponse (un objet : l'annonce complète) et on affiche son texte long.
         const resultat = await reponse.json();
-        detail.textContent = resultat.full_description;
+        detail.textContent = resultat.data.full_description;
+
         carte.append(detail);
     })
 
@@ -126,7 +127,8 @@ for (const annonce of annonces) {
             corps = { message: donnees.message };
         }
                 // POST : on envoie les données en JSON dans le corps de la requête (jamais dans l'adresse).
-        const reponse = await fetch(`/api/ads/${annonce.id}/applications`, {
+                const reponse = await fetch(`/ads/${annonce.id}/applications`, {
+
             method: "POST",
             headers: entetes,
             body: JSON.stringify(corps)
@@ -152,7 +154,7 @@ for (const annonce of annonces) {
 }
 
 async function chargerAnnonces() {
-    const reponse = await fetch("/api/ads");
+        const reponse = await fetch("/ads");
     if (!reponse.ok) {
         zone.textContent = "Impossible de charger les annonces.";
         return;
