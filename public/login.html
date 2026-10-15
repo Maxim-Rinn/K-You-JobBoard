@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion — K-YOU</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght,GRAD@6..144,1..1000,0..100&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Orbitron:wght@900&display=swap" rel="stylesheet">
+</head>
+<body>
+<header>
+    <nav>
+        <a href="index.html" class="logo">K-YOU</a>
+    </nav>
+</header>
+
+<main>
+    <section class="hero">
+        <h1>Connexion</h1>
+    </section>
+
+    <div class="modal-content" style="margin: 0 auto;">
+        <form id="login-form">
+            <label for="login-email">Email :</label>
+            <input type="email" id="login-email" required>
+
+            <label for="login-password">Mot de passe :</label>
+            <input type="password" id="login-password" required>
+
+            <p id="login-error" style="color: #dc2626;"></p>
+
+            <button type="submit" class="btn-apply">Se connecter</button>
+        </form>
+        <p>Pas encore de compte ? <a href="account.html">Créer un compte</a></p>
+    </div>
+</main>
+
+<footer>
+    <p>&copy; 2026 K-YOU — Job Board Tech.</p>
+</footer>
+
+<script src="js/api.js"></script>
+<script src="js/login.js"></script>
+</body>
+</html>
