@@ -64,6 +64,12 @@ for (const annonce of annonces) {
     carte.append(apply);
     
         for (const champ of champs) {
+                    // Si l'utilisateur est connecté (token présent), on saute les champs personnels : l'API connaît déjà son compte.
+        // "continue" = passer directement au champ suivant de la boucle.
+        if (localStorage.getItem("token") && champ.name !== "message") {
+            continue;
+        }
+
         const saisie = document.createElement("input");
         saisie.name = champ.name;
         saisie.type = champ.type;
@@ -104,15 +110,28 @@ for (const annonce of annonces) {
     formulaire.addEventListener("submit", async function(event){
         event.preventDefault();
 
-        // Lit tous les champs du formulaire : { last_name, first_name, email, phone, password, message }.
+                // Lit tous les champs du formulaire : { last_name, first_name, email, phone, password, message }.
         const donnees = Object.fromEntries(new FormData(formulaire));
 
-        // POST : on envoie les données en JSON dans le corps de la requête (jamais dans l'adresse).
+                // Y a-t-il un token (utilisateur connecté) ? Il est rangé dans localStorage sous la clé "token".
+        const token = localStorage.getItem("token");
+
+        // En-têtes de la requête : on dit qu'on envoie du JSON.
+        const entetes = { "Content-Type": "application/json" };
+                // Connecté : on montre le badge à l'API, et on n'envoie que le message (elle connaît déjà le compte).
+        // Visiteur : on envoie toutes les informations, comme avant.
+        let corps = donnees;
+        if (token) {
+            entetes.Authorization = "Bearer " + token;
+            corps = { message: donnees.message };
+        }
+                // POST : on envoie les données en JSON dans le corps de la requête (jamais dans l'adresse).
         const reponse = await fetch(`/api/ads/${annonce.id}/applications`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(donnees)
+            headers: entetes,
+            body: JSON.stringify(corps)
         });
+
 
         // Un seul endroit pour afficher le résultat sous le formulaire.
         message.textContent = "";
