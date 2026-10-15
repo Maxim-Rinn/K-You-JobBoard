@@ -391,4 +391,59 @@ footer {
     padding: 2.5rem 0;
     font-size: 0.875rem;
     width: 100%;
+
+    /* ==========================================
+   RESPONSIVE : téléphone (écran de 640px ou moins)
+   ========================================== */
 }
+@media (max-width: 640px) {
+    /* Barre du haut : le logo et les liens passent sur deux lignes au lieu de se chevaucher */
+    nav {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        padding: 1rem;
+    }
+
+    #nav-links {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    .logo {
+        font-size: 1.4rem;
+    }
+
+    /* Le contenu a moins de marge sur les côtés */
+    main {
+        padding: 1.5rem 1rem;
+    }
+
+    /* Le titre d'accueil est moins grand */
+    .hero h1 {
+        font-size: 1.75rem;
+    }
+
+    /* Le bandeau coloré est plus étroit et ne couvre plus le texte */
+    body::after {
+        width: 6rem;
+        right: 5%;
+    }
+
+    /* Les cartes passent sur une seule colonne et ne dépassent plus de l'écran */
+    #ads-list,
+    #liste-annonces {
+        grid-template-columns: 1fr;
+    }
+
+    /* Les liens de la barre sont foncés pour rester lisibles sur le fond clair */
+    #nav-links a {
+        color: var(--text-main);
+    }
+
+    /* Le bandeau coloré est plus transparent pour ne pas gêner la lecture */
+    body::after {
+        opacity: 0.35;
+    }
+
+}
+
