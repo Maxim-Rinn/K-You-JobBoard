@@ -332,6 +332,9 @@ main {
 
 .btn-apply {
     color: white;
+    background: var(--stripe-2);
+    border-color: var(--text-main);
+
 }
 
 .btn-apply:hover {
@@ -439,6 +442,12 @@ footer {
     #nav-links a {
         color: var(--text-main);
     }
+
+    /* Le bouton « Connexion » a un fond foncé : son texte reste blanc */
+    #nav-links #link-login {
+        color: white;
+    }
+
 
     /* Le bandeau coloré est plus transparent pour ne pas gêner la lecture */
     body::after {
