@@ -71,8 +71,9 @@ router.post('/register', async (req, res) => {
       RETURNING id, first_name, last_name, email, phone, role
     `, [first_name, last_name, cleanEmail, phone, hash]);
 
-    // 8. 201 = "créé" ; on renvoie la personne (un objet, pas un tableau)
-    res.status(201).json(result.rows[0]);
+    // 8. 201 = "créé" ; on renvoie la personne (un objet, pas un tableau),
+    //    rangée dans "data" comme dans toutes les routes de l'API
+    res.status(201).json({ data: result.rows[0] });
   } catch (error) {
     // 23505 = l'email a été pris entre notre SELECT et notre INSERT
     // (deux inscriptions simultanées) : même réponse qu'à l'étape 5
@@ -162,8 +163,8 @@ router.get('/me', requireAuth, async (req, res) => {
     return res.status(404).json({ error: 'Compte introuvable' });
   }
 
-  // 3. Un seul compte par id : on renvoie l'objet, pas le tableau
-  res.json(result.rows[0]);
+  // 3. Un seul compte par id : on renvoie l'objet (pas le tableau), dans "data"
+  res.json({ data: result.rows[0] });
 });
 
 

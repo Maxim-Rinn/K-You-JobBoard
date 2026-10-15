@@ -61,15 +61,19 @@ router.get('/', async (req, res) => {
 
   // 4. Le nombre total d'annonces actives (pour calculer le nombre de pages)
   const count = await pool.query('SELECT COUNT(*) FROM ads WHERE is_active = TRUE');
-  const total = Number(count.rows[0].count);
+  const totalItems = Number(count.rows[0].count);
 
-  // 5. La réponse : les annonces + les infos de pagination
+  // 5. La réponse : les annonces + les infos de pagination.
+  //    Même format que les listes de Robin (companies, categories…) :
+  //    { data: [...], pagination: { page, limit, totalItems, totalPages } }
   res.json({
     data: result.rows,
-    page,
-    limit,
-    total,
-    totalPages: Math.ceil(total / limit),
+    pagination: {
+      page,
+      limit,
+      totalItems,
+      totalPages: Math.ceil(totalItems / limit),
+    },
   });
 });
 
@@ -109,9 +113,9 @@ router.get('/:id', async (req, res) => {
     return res.status(404).json({ error: 'Annonce introuvable' });
   }
 
-  // 5. Un id est unique, donc une seule ligne : on renvoie rows[0] (un objet)
-  //    plutôt que le tableau, plus simple à utiliser pour le front
-  res.json(result.rows[0]);
+  // 5. Un id est unique, donc une seule ligne : on renvoie rows[0] (un objet,
+  //    pas le tableau), rangé dans "data" comme dans toutes les routes de l'API
+  res.json({ data: result.rows[0] });
 });
 
 
@@ -157,7 +161,7 @@ router.post('/:id/applications', optionalAuth, async (req, res) => {
         VALUES ($1, $2, $3)
         RETURNING *
       `, [adId, req.user.id, message.trim()]);
-      return res.status(201).json(result.rows[0]);
+      return res.status(201).json({ data: result.rows[0] });
     } catch (error) {
       // 23505 = violation d'une contrainte UNIQUE : ici UNIQUE(ad_id, person_id).
       // On laisse la base refuser le doublon plutôt que de faire un SELECT avant :
@@ -215,7 +219,7 @@ router.post('/:id/applications', optionalAuth, async (req, res) => {
     `, [adId, person.rows[0].id, message.trim()]);
 
     await client.query('COMMIT'); // tout a marché : on rend les deux INSERT définitifs
-    res.status(201).json(application.rows[0]);
+    res.status(201).json({ data: application.rows[0] });
   } catch (error) {
     await client.query('ROLLBACK'); // un problème : on annule TOUT, la base est intacte
     // 23505 ici = l'email a été pris entre notre SELECT et notre INSERT
