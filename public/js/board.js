@@ -3,11 +3,11 @@
 
 // Champs du formulaire « Postuler ». `name` = clé envoyée à l'API (noms à confirmer avec Max, route POST /api/ads/:id/applications).
 const champs = [
-    { name: "nom", type: "text", placeholder: "Nom" },
-    { name: "prenom", type: "text", placeholder: "Prénom" },
+    { name: "last_name", type: "text", placeholder: "Nom" },
+    { name: "first_name", type: "text", placeholder: "Prénom" },
     { name: "email", type: "email", placeholder: "Email" },
-    { name: "telephone", type: "tel", placeholder: "Téléphone" },
-    { name: "mot_de_passe", type: "password", placeholder: "Mot de passe" },
+    { name: "phone", type: "tel", placeholder: "Téléphone" },
+    { name: "password", type: "password", placeholder: "Mot de passe" },
     { name: "message", type: "text", placeholder: "Message" },
 ];
 
@@ -34,6 +34,7 @@ for (const annonce of annonces) {
     const formulaire = document.createElement("form");
     
     const submit = document.createElement("button");
+    const message = document.createElement("p");
     
 
     //2. "Remplir l'assiette" 
@@ -69,7 +70,7 @@ for (const annonce of annonces) {
         saisie.placeholder = champ.placeholder;
         formulaire.append(saisie);
     }
-
+    formulaire.append(message);
     formulaire.append(submit);
     zone.append(carte);
     
@@ -99,13 +100,35 @@ for (const annonce of annonces) {
         carte.append(formulaire);
     })
 
-    // preventDefault() empêche le rechargement de la page (sinon les données partiraient dans l'adresse).
-    formulaire.addEventListener("submit", function(event){
-    event.preventDefault();
-    const donnees = Object.fromEntries(new FormData(formulaire));
-console.log(donnees);
+    // Envoi du formulaire : preventDefault() empêche le rechargement de la page, puis on envoie les données à l'API.
+    formulaire.addEventListener("submit", async function(event){
+        event.preventDefault();
 
+        // Lit tous les champs du formulaire : { last_name, first_name, email, phone, password, message }.
+        const donnees = Object.fromEntries(new FormData(formulaire));
+
+        // POST : on envoie les données en JSON dans le corps de la requête (jamais dans l'adresse).
+        const reponse = await fetch(`/api/ads/${annonce.id}/applications`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(donnees)
+        });
+
+        // Un seul endroit pour afficher le résultat sous le formulaire.
+        message.textContent = "";
+        const resultat = await reponse.json();
+
+        // Erreur (400 champ manquant, 409 email déjà pris, 404...) : on affiche le message de l'API.
+        if (!reponse.ok) {
+            message.textContent = resultat.error;
+            return;
+        }
+
+        // 201 : candidature créée.
+        message.textContent = "Candidature envoyée !";
+        formulaire.reset();
     });
+
 }
 }
 
