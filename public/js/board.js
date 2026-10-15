@@ -21,7 +21,10 @@ for (const annonce of annonces) {
     
     //1. fabriquer les éléments (pas encore visible dans la page)
     const carte = document.createElement("article");
-    const titre = document.createElement("h2");
+        // Classe CSS du design de la carte (cadre, ombre, arrondi) : définie dans style.css.
+    carte.className = "ad-card";
+
+    const titre = document.createElement("h3");
     const description = document.createElement("p");
     const lieu = document.createElement("p");
     const entreprise = document.createElement("p");
@@ -29,6 +32,12 @@ for (const annonce of annonces) {
     const dateCarte = document.createElement("p");
     const learnMore = document.createElement("button");
     const apply = document.createElement("button");
+        // Les deux boutons sont rangés dans une boîte « actions », côte à côte, avec le style de style.css.
+    const actions = document.createElement("div");
+    actions.className = "ad-actions";
+    learnMore.className = "btn-details";
+    apply.className = "btn-apply";
+
     const detail = document.createElement("p");
 
     const formulaire = document.createElement("form");
@@ -61,8 +70,9 @@ for (const annonce of annonces) {
     carte.append(contrat);
     carte.append(description);
     carte.append(dateCarte);
-    carte.append(learnMore);
-    carte.append(apply);
+    actions.append(learnMore);
+    actions.append(apply);
+    carte.append(actions);
     
         for (const champ of champs) {
                     // Si l'utilisateur est connecté (token présent), on saute les champs personnels : l'API connaît déjà son compte.
