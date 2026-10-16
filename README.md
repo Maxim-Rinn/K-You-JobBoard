@@ -157,6 +157,8 @@ npm run seed
 
 Message attendu : `Base de données initialisée avec succès !`
 
+Le seed crée **54 annonces actives** (soit 6 pages de 10) pour tester la pagination, ainsi que 2 annonces désactivées qui ne doivent apparaître nulle part sur le site.
+
 **Étape 5 : démarrer le serveur**
 
 ```bash
@@ -199,7 +201,7 @@ Créés par `npm run seed` :
 
 Adresse du site : <http://localhost:3000>
 
-1. **En visiteur (non connecté)** : sur l'accueil, parcourez les annonces. Utilisez la recherche et le filtre par catégorie.
+1. **En visiteur (non connecté)** : sur l'accueil, parcourez les annonces (10 par page, boutons « Précédent » / « Suivant »). Tapez un mot dans le champ de recherche (ex. `react`, `Lyon`, `NovaSoft`) : la liste se filtre pendant la frappe. Choisissez une catégorie dans la liste déroulante ; recherche et catégorie se combinent.
 2. **Créer un compte** : cliquez sur « Connexion » puis « Créer un compte » (`/account.html`). Remplissez le formulaire (mot de passe : 8 caractères minimum). Vous êtes connecté automatiquement.
 3. **Se connecter / se déconnecter** : page `/login.html` avec le compte candidat ; le bouton de déconnexion apparaît dans le menu.
 4. **Modifier son profil** : une fois connecté, ouvrez « Mon compte » (`/account.html`) pour renseigner vos technologies (principales, secondaires) et votre mode de travail.
@@ -277,7 +279,7 @@ Pour les routes protégées, ajoutez l'en-tête `Authorization: Bearer <jeton>` 
 
 | Méthode | Route | Accès | Description |
 |---|---|---|---|
-| GET | `/ads?page=1&limit=10` | Public | Annonces actives, paginées (limit : 1 à 50) |
+| GET | `/ads?page=1&limit=10&q=react&category_id=2` | Public | Annonces actives, paginées (limit : 1 à 50). `q` (facultatif) cherche dans le titre, la description, le lieu, l'entreprise et les technologies ; `category_id` (facultatif) filtre par catégorie. Les deux se combinent |
 | GET | `/ads/:id` | Public | Détail d'une annonce |
 | POST | `/ads/:id/applications` | Public ou connecté | Postuler (voir section 8) |
 | POST | `/ads` | Admin | Créer une annonce |
@@ -362,5 +364,5 @@ Les listes renvoient `{ "data": [...], "pagination": { "page", "limit", "totalIt
 ## 10. État d'avancement
 
 - L'API est fonctionnelle et testable (sections 6 et 7).
-- Les pages `login.html`, `account.html` et `admin.html` utilisent l'API.
-- La liste des annonces de l'accueil (`public/js/board.js`) affiche pour le moment des **annonces d'exemple** en dur ; son branchement sur `GET /ads` est prévu. Les annonces réelles de la base se consultent via l'API (`/ads`) ou l'espace admin.
+- Les pages `index.html`, `login.html`, `account.html` et `admin.html` utilisent l'API et partagent la même barre de navigation.
+- L'accueil affiche les annonces de la base, avec pagination, recherche et filtre par catégorie. « Voir plus » ouvre puis referme la description. « Postuler » demande d'être connecté (un visiteur est invité à se connecter ou à créer un compte) ; l'API, elle, accepte toujours la candidature d'un visiteur (section 8).

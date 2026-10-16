@@ -132,7 +132,7 @@ nav {
 
 #nav-links a {
     text-decoration: none;
-    color: white;
+    color: var(--text-main);
     font-weight: 600;
     font-size: 0.95rem;
     transition: opacity 0.2s;
@@ -140,6 +140,12 @@ nav {
 
 #nav-links a:hover {
     opacity: 0.7;
+}
+
+/* « Connexion » et « Déconnexion » sont des boutons à fond foncé : leur texte reste blanc */
+#nav-links #link-login,
+#nav-links #link-logout {
+    color: white;
 }
 
 #link-logout {
@@ -340,6 +346,25 @@ main {
 
 .btn-apply:hover {
     opacity: 0.9;
+}
+
+/* Pagination de l'accueil : « Précédent » / « Suivant » reprennent le style .btn-details */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.pagination .btn-details {
+    flex: none;
+}
+
+.pagination .btn-details:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
 }
 
 /* Formulaire « Postuler » dans une carte : champs empilés, espacés */
