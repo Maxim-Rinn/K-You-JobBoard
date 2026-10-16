@@ -398,3 +398,37 @@ footer {
     gap: 1rem; 
     margin-bottom: 3rem;
 }
+
+/* ==========================================
+   RESPONSIVE : téléphone (écran de 640px ou moins)
+   ========================================== */
+@media (max-width: 640px) {
+    /* Barre du haut : les liens passent à la ligne au lieu de se chevaucher */
+    nav {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        padding: 1rem;
+    }
+
+    #nav-links {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    /* Liens foncés pour rester lisibles sur le fond clair */
+    #nav-links a {
+        color: var(--text-main);
+    }
+
+    /* La liste déroulante et le bouton « Ajouter » passent sur deux lignes au lieu de déborder */
+    .admin-controls {
+        flex-wrap: wrap;
+    }
+
+    /* Le bandeau coloré est plus étroit et plus transparent */
+    body::after {
+        width: 6rem;
+        right: 5%;
+        opacity: 0.35;
+    }
+}

@@ -268,7 +268,8 @@ main {
 /* ==========================================
    CARTES D'ANNONCES (Fond Blanc pur)
    ========================================== */
-#ads-list {
+#ads-list,
+#liste-annonces {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
     gap: 1.5rem;
@@ -299,7 +300,7 @@ main {
 .ad-card p {
     color: var(--text-muted);
     font-size: 0.95rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.5rem;
 }
 
 /* Boutons d'action */
@@ -332,11 +333,45 @@ main {
 
 .btn-apply {
     color: white;
+    background: var(--stripe-2);
+    border-color: var(--text-main);
+
 }
 
 .btn-apply:hover {
     opacity: 0.9;
 }
+
+/* Formulaire « Postuler » dans une carte : champs empilés, espacés */
+.ad-card form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.ad-card input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 0.95rem;
+}
+
+/* Bouton « Envoyer » du formulaire, même style que « Postuler » */
+.ad-card form button {
+    align-self: flex-start;
+    padding: 0.8rem 1.25rem;
+    border: 2px solid var(--text-main);
+    border-radius: var(--radius-sm);
+    background: var(--stripe-2);
+    color: white;
+    font-family: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
 
 .modal {
     position: fixed;
@@ -391,4 +426,65 @@ footer {
     padding: 2.5rem 0;
     font-size: 0.875rem;
     width: 100%;
+
+    /* ==========================================
+   RESPONSIVE : téléphone (écran de 640px ou moins)
+   ========================================== */
 }
+@media (max-width: 640px) {
+    /* Barre du haut : le logo et les liens passent sur deux lignes au lieu de se chevaucher */
+    nav {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        padding: 1rem;
+    }
+
+    #nav-links {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    .logo {
+        font-size: 1.4rem;
+    }
+
+    /* Le contenu a moins de marge sur les côtés */
+    main {
+        padding: 1.5rem 1rem;
+    }
+
+    /* Le titre d'accueil est moins grand */
+    .hero h1 {
+        font-size: 1.75rem;
+    }
+
+    /* Le bandeau coloré est plus étroit et ne couvre plus le texte */
+    body::after {
+        width: 6rem;
+        right: 5%;
+    }
+
+    /* Les cartes passent sur une seule colonne et ne dépassent plus de l'écran */
+    #ads-list,
+    #liste-annonces {
+        grid-template-columns: 1fr;
+    }
+
+    /* Les liens de la barre sont foncés pour rester lisibles sur le fond clair */
+    #nav-links a {
+        color: var(--text-main);
+    }
+
+    /* Le bouton « Connexion » a un fond foncé : son texte reste blanc */
+    #nav-links #link-login {
+        color: white;
+    }
+
+
+    /* Le bandeau coloré est plus transparent pour ne pas gêner la lecture */
+    body::after {
+        opacity: 0.35;
+    }
+
+}
+
