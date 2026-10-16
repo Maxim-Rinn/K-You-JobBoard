@@ -366,3 +366,24 @@ Les listes renvoient `{ "data": [...], "pagination": { "page", "limit", "totalIt
 - L'API est fonctionnelle et testable (sections 6 et 7).
 - Les pages `index.html`, `login.html`, `account.html` et `admin.html` utilisent l'API et partagent la même barre de navigation.
 - L'accueil affiche les annonces de la base, avec pagination, recherche et filtre par catégorie. « Voir plus » ouvre puis referme la description. « Postuler » demande d'être connecté (un visiteur est invité à se connecter ou à créer un compte) ; l'API, elle, accepte toujours la candidature d'un visiteur (section 8).
+
+## 🚧 Ce qu'il reste à développer (Roadmap)
+
+Les fonctionnalités suivantes représentent les axes d'amélioration et les modules en cours ou à venir pour parfaire l'application :
+
+### 1. Gestion des rôles et Inscription
+* **Sélection du rôle à l'inscription** : Permettre au visiteur de choisir explicitement s'il s'inscrit en tant que **Candidat** ou **Recruteur** dès le formulaire d'enregistrement (actuellement par défaut ou géré en base/seed).
+* **Gestion des permissions par rôle** : Sécurisation accrue des routes pour empêcher un candidat d'accéder aux espaces recruteurs/administrateurs.
+
+### 2. Espace Recruteur & Gestion des Offres
+* **Tableau de bord Recruteur** : Une interface dédiée permettant à un recruteur de voir uniquement les offres d'emploi publiées par sa propre entreprise ainsi que les candidats associés.
+* **CRUD des annonces** : Interface front-end pour permettre aux recruteurs de créer, modifier, désactiver ou supprimer leurs propres offres d'emploi.
+
+### 3. Suivi & Statut des Candidatures
+* **Statuts dynamiques** : Ajout d'un statut sur les candidatures (ex: *En attente*, *En cours d'examen*, *Acceptée*, *Refusée*).
+* **Mise à jour par le recruteur** : Possibilité pour le recruteur de modifier le statut d'une candidature depuis son interface.
+* **Espace Candidat enrichi** : Permettre au candidat de suivre en temps réel l'évolution et l'historique de toutes ses candidatures depuis sa page de profil (`account.html`).
+
+### 4. Expérience utilisateur (UX) & Recherche
+* **Filtres de recherche avancés** : Ajout de filtres sur la page d'accueil (recherche par mots-clés, par catégorie, par type de contrat ou par localisation).
+* **Pagination front-end** : Amélioration de l'affichage des listes d'annonces et d'entreprises avec une pagination fluide.
