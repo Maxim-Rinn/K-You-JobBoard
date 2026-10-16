@@ -99,6 +99,108 @@ async function seed() {
 
     const ad1Id = adsRes.rows[0].id;
 
+    // 5 bis. ANNONCES SUPPLÉMENTAIRES (pour tester la pagination, la recherche et le filtre par catégorie)
+    // Au total : 54 annonces ACTIVES (2 ci-dessus + 52 ici) = 6 pages de 10, et 2 annonces
+    // DÉSACTIVÉES qui ne doivent apparaître nulle part sur le site.
+
+    // 3 entreprises de plus, pour varier les noms d'entreprise dans les annonces
+    const extraCompaniesRes = await db.query(`
+      INSERT INTO companies (name, description, website, city, tech_stack, tech_team_composition, tech_team_avg_age)
+      VALUES
+        ('NovaSoft', 'Éditeur de logiciels de gestion pour les PME.', 'https://novasoft.example', 'Strasbourg', 'Java, Angular, PostgreSQL', '20 développeurs', 31),
+        ('DataPulse', 'Cabinet de conseil en data et business intelligence.', 'https://datapulse.example', 'Lille', 'Python, SQL, Power BI', '12 data analysts', 28),
+        ('CyberShield', 'Société de services en cybersécurité.', 'https://cybershield.example', 'Nantes', 'Linux, SIEM, Python', '10 consultants', 30)
+      RETURNING id;
+    `);
+
+    // Les entreprises utilisables dans les annonces
+    const allCompanyIds = [
+      companyTechCorpId,
+      companyDevStudioId,
+      ...extraCompaniesRes.rows.map((row) => row.id),
+    ];
+
+    // Les 4 catégories, dans l'ordre d'insertion : CDI, CDD, Stage, Alternance
+    const allCategoryIds = categoriesRes.rows.map((row) => row.id);
+
+    // Modèles de métiers : [titre, description courte, technologies demandées, technologies optionnelles]
+    const jobTemplates = [
+      ['Développeur Front-end React', 'Créer les interfaces de nos applications web', 'React, JavaScript, HTML/CSS', 'TypeScript, Tailwind'],
+      ['Développeur Back-end Node.js', 'Concevoir et maintenir nos API REST', 'Node.js, Express, PostgreSQL', 'Docker, Jest'],
+      ['Développeur Full-stack JavaScript', 'Travailler sur toute la chaîne, du front à la base de données', 'JavaScript, Node.js, React', 'MongoDB, Docker'],
+      ['Développeur Python Django', 'Développer des applications web métier avec Django', 'Python, Django, PostgreSQL', 'Celery, Docker'],
+      ['Ingénieur DevOps', 'Automatiser les déploiements et superviser la production', 'Docker, Linux, CI/CD', 'Kubernetes, Terraform'],
+      ['Analyste SOC', 'Surveiller et analyser les alertes de sécurité', 'SIEM, Linux, Réseaux', 'Python, Splunk'],
+      ['Consultant GRC cybersécurité', 'Accompagner nos clients sur la conformité et les risques', 'ISO 27001, Analyse de risques, RGPD', 'EBIOS RM'],
+      ['Data Analyst', 'Transformer les données en tableaux de bord utiles', 'SQL, Python, Power BI', 'dbt, Tableau'],
+      ['Développeur mobile Flutter', 'Développer notre application mobile iOS et Android', 'Flutter, Dart', 'Firebase'],
+      ['UX/UI Designer', 'Concevoir des parcours simples et accessibles', 'Figma, Design system', 'Webflow'],
+      ['Administrateur systèmes et réseaux', "Garantir la disponibilité de l'infrastructure", 'Linux, Réseaux, Bash', 'Ansible'],
+      ['Testeur QA automatisation', 'Écrire et maintenir les tests automatisés', 'Cypress, JavaScript', 'Selenium'],
+      ['Chef de projet digital', 'Piloter les projets web de la conception à la livraison', 'Gestion de projet, Agile', 'Jira'],
+    ];
+
+    const cities = ['Paris', 'Lyon', 'Strasbourg', 'Lille', 'Nantes', 'Bordeaux', 'Toulouse', 'Marseille'];
+    const workModes = ['Présentiel', 'Hybride', 'Télétravail'];
+    const processes = [
+      '1. entretien RH, 2. entretien technique',
+      '1. entretien avec le manager, 2. cas pratique, 3. entretien final',
+      '1. échange téléphonique, 2. entretien avec l\'équipe',
+    ];
+
+    const DAY = 24 * 60 * 60 * 1000;
+    const extraAdsCount = 54; // 52 actives + 2 désactivées
+
+    for (let i = 0; i < extraAdsCount; i++) {
+      const [jobTitle, shortDesc, required, optional] = jobTemplates[i % jobTemplates.length];
+      const companyId = allCompanyIds[i % allCompanyIds.length];
+      const categoryId = allCategoryIds[i % allCategoryIds.length];
+      const categoryIndex = i % allCategoryIds.length; // 0 CDI, 1 CDD, 2 Stage, 3 Alternance
+      const city = cities[i % cities.length];
+      const workMode = workModes[i % workModes.length];
+
+      // Les 2 dernières annonces sont désactivées (invisibles pour le public)
+      const isActive = i < extraAdsCount - 2;
+
+      // Salaire selon le type de contrat : stage et alternance = montants mensuels plus bas
+      const isLowPay = categoryIndex >= 2;
+      const salaryMin = isLowPay ? 900 + (i % 4) * 100 : 32000 + (i % 6) * 2000;
+      const salaryMax = isLowPay ? salaryMin + 300 : salaryMin + 8000;
+
+      // Chaque annonce a un jour de décalage : l'ordre d'affichage (plus récentes d'abord) est lisible
+      const createdAt = new Date(Date.now() - (i + 1) * DAY);
+
+      const title = jobTitle + (isLowPay ? (categoryIndex === 2 ? ' (stage)' : ' (alternance)') : '');
+
+      // Seule TechCorp a un recruteur rattaché dans le seed
+      const contactId = companyId === companyTechCorpId ? recruiterId : null;
+
+      await db.query(`
+        INSERT INTO ads (
+          title, short_description, full_description, location, working_time,
+          salary_min, salary_max, is_active, company_id, category_id, contact_id,
+          work_mode, recruitment_process, required_stack, optional_stack, created_at
+        )
+        VALUES ($1, $2, $3, $4, '35h/semaine', $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15);
+      `, [
+        title,
+        shortDesc,
+        `${shortDesc}. Vous rejoignez une équipe à taille humaine à ${city}, avec un accompagnement au quotidien. Technologies principales : ${required}. Annonce n°${i + 3} du jeu de données de test.`,
+        city,
+        salaryMin,
+        salaryMax,
+        isActive,
+        companyId,
+        categoryId,
+        contactId,
+        workMode,
+        processes[i % processes.length],
+        required,
+        optional,
+        createdAt,
+      ]);
+    }
+
     // 6. CREATION D'UNE CANDIDATURE TEST (Table 'applications')
     // Associe le candidat (userId) à la première annonce (ad1Id)
     await db.query(`

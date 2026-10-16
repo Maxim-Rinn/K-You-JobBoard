@@ -35,7 +35,11 @@ const requireAdmin = require('../middlewares/admin');
 const optionalAuth = require('../middlewares/optionalAuth');
 const bcrypt = require('bcrypt');
 
-// GET /ads?page=1&limit=10 : les annonces actives, page par page
+// GET /ads?page=1&limit=10&q=react&category_id=2 : les annonces actives, page par page
+//   q           (facultatif) : mot(s) recherché(s) dans le titre, la description courte,
+//                 le lieu, le nom de l'entreprise et les technologies demandées
+//   category_id (facultatif) : ne garder que les annonces de cette catégorie
+//   Les deux filtres se combinent, et la pagination s'applique APRÈS le filtrage.
 router.get('/', async (req, res) => {
   // 1. Lire page et limit dans l'URL. Valeurs par défaut : page 1, 10 par page.
   //    On empêche les valeurs absurdes : page au moins 1, limit entre 1 et 50.
@@ -45,7 +49,38 @@ router.get('/', async (req, res) => {
   // 2. Combien d'annonces sauter avant la page demandée
   const offset = (page - 1) * limit;
 
-  // 3. Les annonces de la page (requête paramétrée : $1 = limit, $2 = offset)
+  // 3. Construire la clause WHERE. On part des annonces actives, puis on ajoute
+  //    un morceau par filtre reçu. Les valeurs vont dans le tableau "values" et
+  //    sont envoyées à part ($1, $2...) : aucune injection SQL possible.
+  const conditions = ['ads.is_active = TRUE'];
+  const values = [];
+
+  // Recherche texte : on ignore les espaces autour, et on neutralise % et _
+  // (jokers de LIKE) pour qu'ils soient cherchés comme de simples caractères.
+  const q = typeof req.query.q === 'string' ? req.query.q.trim() : '';
+  if (q) {
+    values.push('%' + q.replace(/[\\%_]/g, '\\$&') + '%');
+    const n = values.length;
+    conditions.push(`(
+      ads.title ILIKE $${n}
+      OR ads.short_description ILIKE $${n}
+      OR ads.location ILIKE $${n}
+      OR companies.name ILIKE $${n}
+      OR ads.required_stack ILIKE $${n}
+      OR ads.optional_stack ILIKE $${n}
+    )`);
+  }
+
+  // Filtre par catégorie : un entier positif, sinon on l'ignore
+  const categoryId = parseInt(req.query.category_id);
+  if (Number.isInteger(categoryId) && categoryId >= 1) {
+    values.push(categoryId);
+    conditions.push(`ads.category_id = $${values.length}`);
+  }
+
+  const where = conditions.join(' AND ');
+
+  // 4. Les annonces de la page. limit et offset sont ajoutés à la suite des valeurs.
   const result = await pool.query(`
     SELECT ads.id, ads.title, ads.short_description, ads.location,
            ads.work_mode, ads.created_at,
@@ -54,16 +89,22 @@ router.get('/', async (req, res) => {
     FROM ads
     JOIN companies  ON companies.id  = ads.company_id
     JOIN categories ON categories.id = ads.category_id
-    WHERE ads.is_active = TRUE
-    ORDER BY ads.created_at DESC
-    LIMIT $1 OFFSET $2
-  `, [limit, offset]);
+    WHERE ${where}
+    ORDER BY ads.created_at DESC, ads.id DESC
+    LIMIT $${values.length + 1} OFFSET $${values.length + 2}
+  `, [...values, limit, offset]);
 
-  // 4. Le nombre total d'annonces actives (pour calculer le nombre de pages)
-  const count = await pool.query('SELECT COUNT(*) FROM ads WHERE is_active = TRUE');
+  // 5. Le nombre total d'annonces qui correspondent aux filtres (pour calculer
+  //    le nombre de pages). Même WHERE, donc mêmes jointures nécessaires.
+  const count = await pool.query(`
+    SELECT COUNT(*)
+    FROM ads
+    JOIN companies ON companies.id = ads.company_id
+    WHERE ${where}
+  `, values);
   const totalItems = Number(count.rows[0].count);
 
-  // 5. La réponse : les annonces + les infos de pagination.
+  // 6. La réponse : les annonces + les infos de pagination.
   //    Même format que les listes de Robin (companies, categories…) :
   //    { data: [...], pagination: { page, limit, totalItems, totalPages } }
   res.json({
