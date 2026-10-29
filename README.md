@@ -1,389 +1,84 @@
-# Job Board (K-YOU)
+# K-YOU Job Board
 
-Un site d'offres d'emploi : une **API** (Express + PostgreSQL) et un **front** en JavaScript, servi par la même application.
+Site d'offres d'emploi réalisé en équipe à Epitech (Hugo Jehl, Robin Milanini, Maxim Rinn).
+Une API Express + PostgreSQL et un front en HTML / CSS / JavaScript, servi par le même serveur.
 
-Ce document explique, pas à pas, comment lancer le projet sur votre ordinateur et comment le tester, **même si vous n'avez jamais utilisé Node.js ni Docker**.
+## Fonctionnalités
 
-## Sommaire
+- Liste des annonces avec pagination, recherche et filtre par catégorie
+- Inscription, connexion (JWT) et page profil
+- Candidature à une annonce, en étant connecté ou en créant son compte au passage
+- Espace administrateur pour gérer entreprises, annonces, utilisateurs, catégories et candidatures
 
-1. [Ce que fait le projet](#1-ce-que-fait-le-projet)
-2. [Technologies utilisées](#2-technologies-utilisées)
-3. [Structure du projet](#3-structure-du-projet)
-4. [Lancer le projet en local](#4-lancer-le-projet-en-local)
-5. [Naviguer dans l'application](#5-naviguer-dans-lapplication)
-6. [Tester l'API](#6-tester-lapi)
-7. [Documentation de l'API](#7-documentation-de-lapi)
-8. [Choix de fonctionnement](#8-choix-de-fonctionnement)
-9. [Problèmes fréquents](#9-problèmes-fréquents)
-10. [État d'avancement](#10-état-davancement)
+## Stack
 
----
+Node.js, Express 5, PostgreSQL 16 (Docker), JWT, bcrypt, HTML / CSS / JavaScript sans framework.
 
-## 1. Ce que fait le projet
-
-- Un **visiteur** consulte les annonces et peut postuler en créant son compte au passage.
-- Un **candidat** (rôle `user`) se connecte, gère son profil et postule.
-- Un **recruteur** (rôle `recruiter`) est rattaché à une entreprise.
-- Un **administrateur** (rôle `admin`) gère tout depuis une page dédiée : entreprises, annonces, utilisateurs, catégories et candidatures.
-
-## 2. Technologies utilisées
-
-| Technologie | À quoi elle sert |
-|---|---|
-| **Node.js** | Fait tourner le serveur (JavaScript côté serveur) |
-| **Express 5** | Crée l'API : reçoit les requêtes et renvoie des réponses JSON |
-| **PostgreSQL 16** | La base de données (annonces, entreprises, comptes, candidatures) |
-| **Docker / Docker Compose** | Lance PostgreSQL dans un « conteneur », sans rien installer sur votre PC |
-| **JWT** (`jsonwebtoken`) | Le « badge » donné à la connexion pour prouver qui on est |
-| **bcrypt** | Stocke les mots de passe de façon chiffrée (jamais en clair) |
-| **dotenv** | Lit vos réglages personnels dans le fichier `.env` |
-| **pg** | Fait le lien entre Node.js et PostgreSQL |
-| **nodemon** | Relance le serveur automatiquement quand on modifie le code |
-| **HTML / CSS / JavaScript** | Le front (pages du site), sans framework |
-
-## 3. Structure du projet
+## Structure
 
 ```text
-KYJB/
-├── server.js              # Point de départ : démarre le serveur et branche les routes
-├── package.json           # Liste des librairies et des commandes npm
-├── docker-compose.yml     # Définit la base PostgreSQL lancée par Docker
-├── .env.example           # Modèle des réglages (à copier en .env)
-├── test.http              # Requêtes de test pour l'API (extension REST Client de VS Code)
-├── K-YOU_API.postman_collection.json   # Collection à importer dans Postman
-├── db/
-│   ├── schema.sql         # Création des tables (exécuté automatiquement par Docker)
-│   ├── seed.js            # Données de test (entreprises, annonces, comptes…)
-│   └── index.js           # Connexion à la base
-├── routes/                # Une « boutique » par ressource
-│   ├── ads.js             # Annonces (+ candidature à une annonce)
-│   ├── auth.js            # Inscription, connexion, « qui suis-je »
-│   ├── companies.js       # Entreprises
-│   ├── categories.js      # Catégories
-│   ├── people.js          # Personnes (candidats, recruteurs, admins)
-│   └── applications.js    # Candidatures
-├── middlewares/           # Contrôles appliqués avant les routes
-│   ├── auth.js            # Exige un jeton valide (sinon 401)
-│   ├── optionalAuth.js    # Jeton facultatif (visiteur ou connecté)
-│   ├── admin.js           # Exige le rôle admin (sinon 403)
-│   └── errors.js          # Réponses d'erreur en JSON (404, 500…)
-└── public/                # Le front, servi tel quel par Express
-    ├── index.html         # Accueil : liste des annonces
-    ├── login.html         # Connexion
-    ├── account.html       # Création de compte / profil
-    ├── admin.html         # Espace administrateur
-    ├── css/               # Styles
-    └── js/                # Scripts de chaque page
+server.js            serveur Express
+docker-compose.yml   base PostgreSQL
+db/                  schéma, seed et connexion
+routes/              ads, auth, companies, categories, people, applications
+middlewares/         auth, optionalAuth, admin, errors
+public/              front (index, login, account, admin)
+test.http            requêtes de test (REST Client)
+K-YOU_API.postman_collection.json
 ```
 
-## 4. Lancer le projet en local
+## Installation
 
-### 4.1 Ce qu'il faut installer (une seule fois)
-
-1. **Node.js** (version LTS récente, 20 ou plus) : <https://nodejs.org/>
-2. **Docker Desktop** (Mac / Windows) ou Docker Engine + le plugin compose (Linux) : <https://www.docker.com/products/docker-desktop/>
-3. Un terminal : *Terminal* sur Mac/Linux, *PowerShell* sur Windows.
-
-PostgreSQL n'a **pas** besoin d'être installé : la base tourne dans Docker. Si un PostgreSQL local occupe déjà le port 5432, arrêtez-le (ou voir `.env.example` pour utiliser 5433).
-
-**Vérifiez vos installations** (chaque commande doit afficher un numéro de version) :
-
-```bash
-node -v
-npm -v
-docker --version
-docker compose version
-```
-
-> **Important :** ouvrez **Docker Desktop** et attendez qu'il indique qu'il est démarré *avant* de continuer.
-
-### 4.2 Installation pas à pas
-
-Placez-vous dans le dossier du projet (celui qui contient `package.json`) :
-
-```bash
-cd chemin/vers/KYJB
-```
-
-**Étape 1 : installer les librairies Node**
+Prérequis : Node.js 20+ et Docker.
 
 ```bash
 npm install
+cp .env.example .env     # renseigner PGPASSWORD et JWT_SECRET
+docker compose up -d     # lance PostgreSQL et crée les tables
+npm run seed             # données de test
+npm run dev              # http://localhost:3000
 ```
 
-Un dossier `node_modules` apparaît. C'est normal (il est volontairement absent du dépôt).
+`/health` permet de vérifier que le serveur et la base répondent.
+Pour repartir d'une base vide : `docker compose down -v`, puis `docker compose up -d` et `npm run seed`.
 
-**Étape 2 : créer votre fichier de réglages `.env`**
+## Comptes de test
 
-Mac / Linux :
-
-```bash
-cp .env.example .env
-```
-
-Windows (PowerShell) :
-
-```powershell
-copy .env.example .env
-```
-
-Ouvrez ensuite `.env` dans un éditeur et modifiez **deux valeurs** :
-
-- `PGPASSWORD` : choisissez un mot de passe pour la base (ex. `monMotDePasse123`).
-- `JWT_SECRET` : une longue chaîne aléatoire. Pour en générer une :
-
-  ```bash
-  node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-  ```
-
-  (ou `openssl rand -hex 32` si vous avez openssl). Copiez le résultat dans `.env`.
-
-> **À faire AVANT le premier lancement de la base.** Le fichier `.env` contient des secrets : ne le partagez jamais et ne le publiez pas sur GitHub (il est déjà ignoré par Git).
-
-**Étape 3 : démarrer la base PostgreSQL**
-
-```bash
-docker compose up -d
-```
-
-Au premier lancement, Docker télécharge PostgreSQL, crée l'utilisateur et la base à partir de votre `.env`, puis exécute `db/schema.sql` (création des tables).
-Vérifiez : `docker compose ps` doit afficher le service `db` avec l'état **running**.
-
-**Étape 4 : remplir la base avec des données de test**
-
-```bash
-npm run seed
-```
-
-Message attendu : `Base de données initialisée avec succès !`
-
-Le seed crée **54 annonces actives** (soit 6 pages de 10) pour tester la pagination, ainsi que 2 annonces désactivées qui ne doivent apparaître nulle part sur le site.
-
-**Étape 5 : démarrer le serveur**
-
-```bash
-npm run dev
-```
-
-Message attendu : `Serveur lancé sur http://localhost:3000`. **Laissez ce terminal ouvert** : le serveur tourne tant qu'il est ouvert (arrêt : `Ctrl + C`).
-
-### 4.3 Vérifier que tout fonctionne
-
-- Ouvrez <http://localhost:3000/health> : vous devez voir `{"status":"ok","db":"ok", ...}`. Cela prouve que le serveur **et** la base se parlent.
-- Ouvrez <http://localhost:3000> : le site s'affiche.
-
-### 4.4 Les jours suivants
-
-| Commande | Effet |
-|---|---|
-| `docker compose up -d` | Démarre la base en arrière-plan |
-| `npm run dev` | Démarre le serveur |
-| `docker compose ps` | Vérifie que la base tourne |
-| `docker compose logs db` | Affiche les messages de PostgreSQL (utile en cas d'erreur) |
-| `docker compose stop` | Arrête la base (les données sont gardées) |
-| `docker compose down -v` | Supprime la base **et ses données** ; puis `up -d` et `npm run seed` pour repartir de zéro (par exemple après une modification de `db/schema.sql`) |
-| `npm run seed` | Réinitialise les données de test (efface vos modifications) |
-| `npm start` | Démarre le serveur sans rechargement automatique |
-
-## 5. Naviguer dans l'application
-
-### 5.1 Comptes de test
-
-Créés par `npm run seed` :
-
-| Rôle | Email | Mot de passe | Ce que vous pouvez faire |
-|---|---|---|---|
-| Administrateur | `admin@jobboard.fr` | `admin123` | Tout gérer depuis `admin.html` |
-| Recruteur | `recruiter@techcorp.fr` | `recruiter123` | Compte rattaché à l'entreprise TechCorp |
-| Candidat | `candidat@jobboard.fr` | `user123` | Consulter, postuler, modifier son profil |
-
-### 5.2 Parcours de test conseillé
-
-Adresse du site : <http://localhost:3000>
-
-1. **En visiteur (non connecté)** : sur l'accueil, parcourez les annonces (10 par page, boutons « Précédent » / « Suivant »). Tapez un mot dans le champ de recherche (ex. `react`, `Lyon`, `NovaSoft`) : la liste se filtre pendant la frappe. Choisissez une catégorie dans la liste déroulante ; recherche et catégorie se combinent.
-2. **Créer un compte** : cliquez sur « Connexion » puis « Créer un compte » (`/account.html`). Remplissez le formulaire (mot de passe : 8 caractères minimum). Vous êtes connecté automatiquement.
-3. **Se connecter / se déconnecter** : page `/login.html` avec le compte candidat ; le bouton de déconnexion apparaît dans le menu.
-4. **Modifier son profil** : une fois connecté, ouvrez « Mon compte » (`/account.html`) pour renseigner vos technologies (principales, secondaires) et votre mode de travail.
-5. **Espace administrateur** : connectez-vous avec `admin@jobboard.fr`. Vous êtes redirigé vers `/admin.html`, où une liste déroulante permet de choisir la table à gérer (entreprises, annonces, utilisateurs / candidats, catégories, candidatures), de la parcourir page par page et de supprimer des éléments.
-6. **Accès refusé** : connecté en candidat, tentez d'ouvrir `/admin.html` : vous êtes renvoyé vers l'accueil.
-
-### 5.3 Pages du site
-
-| Page | Adresse | Rôle |
+| Rôle | Email | Mot de passe |
 |---|---|---|
-| Accueil | `/index.html` (ou `/`) | Liste des annonces, recherche, filtre, formulaire de candidature |
-| Connexion | `/login.html` | Se connecter |
-| Compte | `/account.html` | Créer un compte, ou modifier son profil si connecté |
-| Administration | `/admin.html` | Gérer les données (admin uniquement) |
+| Admin | `admin@jobboard.fr` | `admin123` |
+| Recruteur | `recruiter@techcorp.fr` | `recruiter123` |
+| Candidat | `candidat@jobboard.fr` | `user123` |
 
-## 6. Tester l'API
+Le seed crée 54 annonces actives et 2 annonces désactivées.
 
-L'API répond en JSON. Vous pouvez la tester de trois façons.
+## API
 
-**a) Dans le navigateur** (routes publiques en lecture) :
+Les routes protégées attendent l'en-tête `Authorization: Bearer <token>` (token renvoyé par `/auth/login`).
+Les listes renvoient `{ data, pagination: { page, limit, totalItems, totalPages } }`.
 
-- <http://localhost:3000/ads> : liste des annonces actives
-- <http://localhost:3000/ads/1> : détail d'une annonce
-- <http://localhost:3000/companies> et <http://localhost:3000/categories>
-
-**b) Avec `curl` dans le terminal** :
-
-```bash
-# Se connecter : la réponse contient un "token"
-curl -X POST http://localhost:3000/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"candidat@jobboard.fr","password":"user123"}'
-
-# Utiliser le token pour voir son profil (remplacez LE_TOKEN)
-curl http://localhost:3000/auth/me \
-  -H "Authorization: Bearer LE_TOKEN"
-```
-
-(Sous Windows PowerShell, utilisez plutôt `curl.exe` ou l'une des deux options ci-dessous.)
-
-**c) Avec un outil graphique** :
-
-- **Postman** : importez `K-YOU_API.postman_collection.json` (requêtes classées en « Publiques », « Compte » et « Admin »).
-- **VS Code** : installez l'extension *REST Client*, ouvrez `test.http` et cliquez sur « Send Request » au-dessus de chaque requête.
-
-> Les tests qui créent, modifient ou suppriment des données changent votre base. Pour repartir d'une base propre : `npm run seed`.
-
-### Codes de réponse à connaître
-
-| Code | Signification |
-|---|---|
-| `200` / `201` | Succès / élément créé |
-| `400` | Requête incorrecte (champ manquant, identifiant invalide) |
-| `401` | Pas connecté, ou jeton faux / expiré |
-| `403` | Connecté, mais pas le droit (ex. route réservée aux admins) |
-| `404` | Élément introuvable (ou annonce désactivée) |
-| `409` | Conflit (email déjà utilisé, candidature en double) |
-
-## 7. Documentation de l'API
-
-Adresse de base : `http://localhost:3000`
-Pour les routes protégées, ajoutez l'en-tête `Authorization: Bearer <jeton>` (jeton obtenu avec `/auth/login`).
-
-**Accès :** *Public* = sans connexion · *Connecté* = jeton valide · *Admin* = jeton d'un compte `admin`.
-
-### Authentification
-
-| Méthode | Route | Accès | Description |
-|---|---|---|---|
-| POST | `/auth/register` | Public | Créer un compte |
-| POST | `/auth/login` | Public | Se connecter, renvoie un jeton |
-| GET | `/auth/me` | Connecté | Voir son propre profil |
-
-### Annonces
-
-| Méthode | Route | Accès | Description |
-|---|---|---|---|
-| GET | `/ads?page=1&limit=10&q=react&category_id=2` | Public | Annonces actives, paginées (limit : 1 à 50). `q` (facultatif) cherche dans le titre, la description, le lieu, l'entreprise et les technologies ; `category_id` (facultatif) filtre par catégorie. Les deux se combinent |
-| GET | `/ads/:id` | Public | Détail d'une annonce |
-| POST | `/ads/:id/applications` | Public ou connecté | Postuler (voir section 8) |
-| POST | `/ads` | Admin | Créer une annonce |
-| PUT | `/ads/:id` | Admin | Modifier une annonce |
-| DELETE | `/ads/:id` | Admin | Supprimer une annonce |
-
-### Entreprises
-
-| Méthode | Route | Accès | Description |
-|---|---|---|---|
-| GET | `/companies` | Public | Liste paginée |
-| GET | `/companies/:id` | Public | Détail |
-| POST | `/companies` | Admin | Créer |
-| PUT | `/companies/:id` | Admin | Modifier |
-| DELETE | `/companies/:id` | Admin | Supprimer (ses annonces sont supprimées aussi) |
-
-### Catégories
-
-| Méthode | Route | Accès | Description |
-|---|---|---|---|
-| GET | `/categories` | Public | Liste |
-| GET | `/categories/:id` | Public | Détail |
-| POST | `/categories` | Admin | Créer |
-| PUT | `/categories/:id` | Admin | Modifier |
-| DELETE | `/categories/:id` | Admin | Supprimer (impossible si une annonce l'utilise) |
-
-### Personnes
-
-| Méthode | Route | Accès | Description |
-|---|---|---|---|
-| PUT | `/people/:id` | Connecté | Modifier un profil |
-| GET | `/people` | Admin | Liste paginée |
-| GET | `/people/:id` | Admin | Détail |
-| POST | `/people` | Admin | Créer une personne |
-| DELETE | `/people/:id` | Admin | Supprimer |
-
-### Candidatures
-
-| Méthode | Route | Accès | Description |
-|---|---|---|---|
-| GET | `/applications` | Admin | Liste |
-| GET | `/applications/:id` | Admin | Détail |
-| POST | `/applications` | Admin | Créer |
-| PUT | `/applications/:id` | Admin | Modifier (statut : `sent`, `reviewed`, `accepted`, `rejected`) |
-| DELETE | `/applications/:id` | Admin | Supprimer |
-
-### Divers
-
-| Méthode | Route | Accès | Description |
-|---|---|---|---|
-| GET | `/health` | Public | Vérifie que le serveur et la base répondent |
-
-Les listes renvoient `{ "data": [...], "pagination": { "page", "limit", "totalItems", "totalPages" } }`.
-
-## 8. Choix de fonctionnement
-
-### Postuler à une annonce : `POST /ads/:id/applications`
-
-**Tout candidat a un compte** (décision d'équipe), mais on peut le créer directement en postulant :
-
-- **Connecté** (en-tête `Authorization: Bearer <jeton>`) : seul `message` est envoyé, la candidature est liée au compte du jeton.
-- **Visiteur** (sans jeton) : `first_name`, `last_name`, `email`, `password` (8 caractères minimum), `phone` (facultatif) et `message`. Le compte (mot de passe haché avec bcrypt, email en minuscules) et la candidature sont créés **ensemble dans une transaction** : si l'un échoue, rien n'est enregistré.
-- **Email déjà utilisé** par un visiteur : `409`, il doit se connecter pour postuler (un compte existant n'est jamais réutilisé sans mot de passe).
-- **Une seule candidature par personne et par annonce** : un doublon renvoie `409`.
-- Annonce inexistante ou désactivée : `404`. Champ manquant : `400`. Jeton faux ou expiré : `401`.
-
-## 9. Problèmes fréquents
-
-| Symptôme | Cause probable | Solution |
+| Méthode | Route | Accès |
 |---|---|---|
-| `Cannot connect to the Docker daemon` / `docker: command not found` | Docker Desktop n'est pas lancé ou pas installé | Lancez Docker Desktop, attendez qu'il soit prêt, réessayez |
-| `port is already allocated` (5432) | Un PostgreSQL local utilise déjà ce port | Arrêtez-le, ou mettez `5433` dans `.env` (`PGPORT`) **et** dans `docker-compose.yml` |
-| `password authentication failed` | Le mot de passe de `.env` ne correspond pas à celui utilisé à la création de la base | `docker compose down -v`, puis `docker compose up -d` et `npm run seed` |
-| `ECONNREFUSED 127.0.0.1:5432` | La base n'est pas démarrée | `docker compose up -d`, puis `docker compose ps` |
-| `relation "..." does not exist` | Les tables n'ont pas été créées | `docker compose down -v`, puis `up -d`, puis `npm run seed` |
-| `/health` ne répond pas / page blanche | Le serveur n'est pas lancé | Lancez `npm run dev` et vérifiez le message dans le terminal |
-| `EADDRINUSE: address already in use :::3000` | Un autre programme utilise le port 3000 | Fermez-le, ou changez `PORT` dans `.env` |
-| `Cannot find module ...` | Les librairies ne sont pas installées | `npm install` |
-| Jeton invalide, 401 sur toutes les routes protégées | `JWT_SECRET` modifié après la connexion | Reconnectez-vous |
-| Je veux repartir de zéro | | `docker compose down -v`, `docker compose up -d`, `npm run seed` |
+| POST | `/auth/register`, `/auth/login` | Public |
+| GET | `/auth/me` | Connecté |
+| GET | `/ads?page=&limit=&q=&category_id=`, `/ads/:id` | Public |
+| POST | `/ads/:id/applications` | Public ou connecté |
+| POST, PUT, DELETE | `/ads` | Admin |
+| GET | `/companies`, `/categories` (+ `/:id`) | Public |
+| POST, PUT, DELETE | `/companies`, `/categories` | Admin |
+| PUT | `/people/:id` | Connecté |
+| GET, POST, DELETE | `/people` | Admin |
+| GET, POST, PUT, DELETE | `/applications` | Admin |
+| GET | `/health` | Public |
 
-## 10. État d'avancement
+### Candidature
 
-- L'API est fonctionnelle et testable (sections 6 et 7).
-- Les pages `index.html`, `login.html`, `account.html` et `admin.html` utilisent l'API et partagent la même barre de navigation.
-- L'accueil affiche les annonces de la base, avec pagination, recherche et filtre par catégorie. « Voir plus » ouvre puis referme la description. « Postuler » demande d'être connecté (un visiteur est invité à se connecter ou à créer un compte) ; l'API, elle, accepte toujours la candidature d'un visiteur (section 8).
+- Connecté : seul `message` est envoyé, la candidature est liée au compte.
+- Visiteur : `first_name`, `last_name`, `email`, `password`, `phone` (facultatif) et `message`. Le compte et la candidature sont créés dans une même transaction.
+- Email déjà utilisé ou candidature en double : `409`.
 
-## 🚧 Ce qu'il reste à développer (Roadmap)
+## Pistes d'amélioration
 
-Les fonctionnalités suivantes représentent les axes d'amélioration et les modules en cours ou à venir pour parfaire l'application :
-
-### 1. Gestion des rôles et Inscription
-* **Sélection du rôle à l'inscription** : Permettre au visiteur de choisir explicitement s'il s'inscrit en tant que **Candidat** ou **Recruteur** dès le formulaire d'enregistrement (actuellement par défaut ou géré en base/seed).
-* **Gestion des permissions par rôle** : Sécurisation accrue des routes pour empêcher un candidat d'accéder aux espaces recruteurs/administrateurs.
-
-### 2. Espace Recruteur & Gestion des Offres
-* **Tableau de bord Recruteur** : Une interface dédiée permettant à un recruteur de voir uniquement les offres d'emploi publiées par sa propre entreprise ainsi que les candidats associés.
-* **CRUD des annonces** : Interface front-end pour permettre aux recruteurs de créer, modifier, désactiver ou supprimer leurs propres offres d'emploi.
-
-### 3. Suivi & Statut des Candidatures
-* **Statuts dynamiques** : Ajout d'un statut sur les candidatures (ex: *En attente*, *En cours d'examen*, *Acceptée*, *Refusée*).
-* **Mise à jour par le recruteur** : Possibilité pour le recruteur de modifier le statut d'une candidature depuis son interface.
-* **Espace Candidat enrichi** : Permettre au candidat de suivre en temps réel l'évolution et l'historique de toutes ses candidatures depuis sa page de profil (`account.html`).
-
-### 4. Expérience utilisateur (UX) & Recherche
-* **Filtres de recherche avancés** : Ajout de filtres sur la page d'accueil (recherche par mots-clés, par catégorie, par type de contrat ou par localisation).
-* **Pagination front-end** : Amélioration de l'affichage des listes d'annonces et d'entreprises avec une pagination fluide.
+- Choix du rôle (candidat ou recruteur) à l'inscription
+- Espace recruteur : gestion de ses propres annonces et des candidats
+- Suivi du statut des candidatures côté candidat
